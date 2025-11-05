@@ -3,7 +3,7 @@
 A quiet, deliberate odyssey through a world that feels alive and unfamiliar.
 You are an anemone—small, persistent, and searching. Grasp, release, and drift through the strange terrain in pursuit of the one you’ve lost.
 
-[LLM Wiki docs](https://app.komment.ai/github/b38tn1k/november2?version=1&branch=main)
+[LLM Wiki docs](https://app.komment.ai/github/b38tn1k/november2)
 
 ## Running Locally
 
