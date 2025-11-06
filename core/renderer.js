@@ -31,6 +31,7 @@ export async function createRenderer(p) {
     layerDirty: {},
 
     _pendingShaders: {},
+    _shaderCache: new Map(),
 
     frameCount: 0,
     frameThreshold: 1,
@@ -74,6 +75,40 @@ export async function createRenderer(p) {
       } catch (err) {
         this.Debug.log('renderer', '[WARN]', `⚠️ Shader load failed (${name}), using built-in defaults`, err);
         this.shaders[name] = p.createShader(vsDefault, fsDefault);
+      }
+    },
+
+    getOrCreateShader(shaderName, layer) {
+      const shaderComp = this.shader_components[shaderName];
+      if (!shaderComp) {
+        this.Debug.log('renderer', '[WARN]', `⚠️ Shader components for "${shaderName}" not found.`);
+        return null;
+      }
+      // Obtain WebGL context from the layer
+      const gl = layer?._renderer?.GL;
+      if (!gl) {
+        this.Debug.log('renderer', '[WARN]', `⚠️ WebGL context not found for layer; cannot create shader "${shaderName}".`);
+        return null;
+      }
+      // Assign a unique context ID if not already assigned
+      if (!gl.__context_id) {
+        gl.__context_id = Math.random().toString(36).substr(2, 9);
+      }
+      const contextId = gl.__context_id;
+      // Compose a cache key unique per shader and WebGL context
+      const cacheKey = `${shaderName}_${contextId}`;
+      if (this._shaderCache.has(cacheKey)) {
+        this.Debug.log('renderer', `♻️ Reusing cached shader "${shaderName}" for context.`);
+        return this._shaderCache.get(cacheKey);
+      }
+      try {
+        const newShader = layer.createShader(shaderComp.vert, shaderComp.frag);
+        this._shaderCache.set(cacheKey, newShader);
+        this.Debug.log('renderer', `🎨 Created and cached new shader "${shaderName}" for context.`);
+        return newShader;
+      } catch (err) {
+        this.Debug.log('renderer', '[WARN]', `💥 Failed to create shader "${shaderName}" for context`, err);
+        return null;
       }
     },
 
@@ -126,15 +161,13 @@ export async function createRenderer(p) {
         return;
       }
       if (layer.noShader) return;
-      const shaderComp = this.shader_components[shaderName];
-      if (!shaderComp) {
-        this.Debug.log('renderer', '[WARN]', `⚠️ Shader components for "${shaderName}" not found.`);
-        return;
-      }
+
+      const shader = this.getOrCreateShader(shaderName, layer);
+      if (!shader) return;
+
       try {
-        const layer_shader = layer.createShader(shaderComp.vert, shaderComp.frag);
-        layer.shader(layer_shader);
-        layer.activeShader = layer_shader;
+        layer.shader(shader);
+        layer.activeShader = shader;
         layer.noShader = false;
         delete this._pendingShaders[layerName];
         this.Debug.log('renderer', `🎨 Applied deferred shader "${shaderName}" to layer "${layerName}"`);
@@ -191,9 +224,6 @@ export async function createRenderer(p) {
         if (this._pendingShaders[name] && this.frameCount > this.frameThreshold) {
           const shaderName = this._pendingShaders[name];
           const shader = this.shaders[shaderName];
-          if (p.shared.timing.every(5)) {
-            this.Debug.log('renderer', shaderName);
-          }
           if (shader && layer._renderer?.GL) {
             this.createAndApplyShader(name, shaderName);
           }
@@ -228,6 +258,7 @@ export async function createRenderer(p) {
         this.layerDirty[name] = true; // mark dirty after resize
       });
     },
+
     reset() {
       for (const [name, layer] of Object.entries(this.layers)) {
         layer.clear();
@@ -239,6 +270,24 @@ export async function createRenderer(p) {
       this.updateUniforms(p);
       this.frameCount = 0;
       this.Debug.log('renderer', '🔄 Renderer reset, frame counter cleared');
+    },
+
+    disposeShaders() {
+      if (!p._renderer || !p._renderer.GL) {
+        this.Debug.log('renderer', '[WARN]', '⚠️ WebGL context not available, cannot dispose shaders.');
+        return;
+      }
+      const gl = p._renderer.GL;
+      for (const shader of this._shaderCache.values()) {
+        if (shader._glShaderProgram) {
+          gl.deleteProgram(shader._glShaderProgram);
+        } else if (shader._pInst && shader._pInst._gl && shader._pInst._gl.deleteProgram) {
+          // fallback for p5 shaders if needed
+          gl.deleteProgram(shader._pInst._gl);
+        }
+      }
+      this._shaderCache.clear();
+      this.Debug.log('renderer', '🧹 Disposed all cached shaders and cleared cache.');
     }
   };
 
