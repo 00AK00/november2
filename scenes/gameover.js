@@ -2,8 +2,19 @@
 
 export function loadGameOver(p) {
     return {
+        Debug: p.shared.Debug,
         init() {
-            console.log("💀 Game Over Screen");
+            this.Debug.log('level', "Game Over");
+            p.shared.ui.hide();
+            const r = p.shared.renderer;
+            const player = p.shared.player;
+            player.deactivate();
+            r.reset();
+            r.deferShader('background', 'default');
+            r.deferShader('world', 'default');
+            r.setNoShader('entities');
+            r.setNoShader('ui');
+            // r.deferShader('ui', 'default');
         },
         onActionStart(action) {
             if (action === "pause") p.shared.sceneManager.change("menu");
@@ -16,25 +27,34 @@ export function loadGameOver(p) {
         },
 
         update() {
-
+            const r = p.shared.renderer;
+            r.markDirty('ui');
+            r.markDirty('background');
         },
 
         draw() {
             const r = p.shared.renderer;
             r.use('default');
-            r.drawScene(() => {
-                p.push();
-                p.background(100, 0, 0);
-                p.fill(255);
-                p.textAlign(p.CENTER, p.CENTER);
-                p.textSize(42);
-                p.text(`Game Over\nPress ${p.shared.controls.map.pause} for Menu`, 0, 0);
-                p.pop();
+
+            r.drawScene(({ background, ui }) => {
+                // Background layer
+                if (r.layerDirty.background) {
+                    background.background(80, 0, 0);
+                }
+                // UI layer (text)
+                if (r.layerDirty.ui) {
+                    ui.push();
+                    ui.textAlign(p.CENTER, p.CENTER);
+                    ui.textSize(42);
+                    ui.fill(255);
+                    ui.text(`Game Over\nPress ${p.shared.controls.map.pause} for Menu`, 0, 0);
+                    ui.pop();
+                }
             });
         },
 
         cleanup() {
-            console.log("🧹 Game Over cleanup");
+            this.Debug.log('level', "🧹 Game Over cleanup");
         },
     };
 }

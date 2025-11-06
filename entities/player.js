@@ -23,14 +23,14 @@ export function createPlayer(p) {
         },
 
         update(dt) {
+            if (!this.visible) return;
             if (this.movingLeft) this.x -= this.speed * dt;
             if (this.movingRight) this.x += this.speed * dt;
         },
 
         draw(p) {
-            p.fill(200, 200, 200);
-            // p.noFill();
-            p.stroke(255, 0, 0);
+            if (!this.visible) return;
+            p.fill(0, 200, 200);
             p.circle(this.x, this.y, this.size);
         },
 
@@ -41,6 +41,13 @@ export function createPlayer(p) {
             this.movingRight = false;
             this.visible = true;
             if (this.Debug) this.Debug.log('player', `Player reset to (${this.x}, ${this.y})`);
+        },
+
+        deactivate() {
+            this.visible = false;
+            this.movingLeft = false;
+            this.movingRight = false;
+            if (this.Debug) this.Debug.log('player', 'Player deactivated');
         }
     };
 }

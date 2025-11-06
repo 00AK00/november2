@@ -1,35 +1,57 @@
 export function loadMenu(p) {
     return {
+        Debug: p.shared.Debug,
+
         init() {
-            console.log("📜 Menu initialized");
+            this.Debug.log('level', "📜 Menu initialized");
+            p.shared.ui.hide();
+            const r = p.shared.renderer;
+            const player = p.shared.player;
+            player.deactivate();
+            r.reset();
+            r.deferShader('background', 'default');
+            r.deferShader('world', 'default');
+            r.setNoShader('entities');
+            r.deferShader('ui', 'default');
         },
 
         onKeyPressed(key, keyCode) {
-            console.log(`Key pressed in Menu: ${key} (${keyCode})`);
+            this.Debug.log('level', `Key pressed in Menu: ${key} (${keyCode})`);
             p.shared.sceneManager.change('level1');
         },
 
         update() {
-            // Menu update loop (no direct key checks; handled via controls)
+            const r = p.shared.renderer;
+            // Menu rarely changes, but mark UI dirty for blinking text or animation
+            r.markDirty('ui');
+            r.markDirty('background');
         },
 
         draw() {
             const r = p.shared.renderer;
-            r.use('default'); // activate default shader
+            r.use('default');
 
-            // drawScene ensures the draw commands run inside the active shader pass
-            r.drawScene(() => {
-                p.push();
-                p.textAlign(p.CENTER, p.CENTER);
-                p.textSize(42);
-                p.fill(255);
-                p.text("Main Menu\nPress any key to start", 0, 0);
-                p.pop();
+            r.drawScene(({ background, ui }) => {
+                // Background layer
+                if (r.layerDirty.background) {
+                    background.background(0, 0, 80);
+                }
+
+                // UI layer (text)
+                if (r.layerDirty.ui) {
+                    ui.push();
+                    ui.textAlign(p.CENTER, p.CENTER);
+                    ui.textSize(42);
+                    ui.fill(255);
+                    ui.text("Main Menu\nPress any key to start", 0, 0);
+                    ui.pop();
+                }
             });
         },
 
         cleanup() {
-            console.log("🧹 Menu cleanup");
+            this.Debug.log('level', "🧹 Menu cleanup");
+            p.shared.ui.show();
         },
     };
 }

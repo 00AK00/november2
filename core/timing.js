@@ -3,7 +3,7 @@ export function createTiming(p) {
     delta: 0,
     lastTime: 0,
     accumulator: 0,
-    step: 1 / 60, // 60Hz logic update
+    step: 1 / p.shared.settings.fps,
     elapsed: 0,
 
     update() {

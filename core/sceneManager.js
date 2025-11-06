@@ -3,6 +3,7 @@ export function createSceneManager(p) {
   const manager = {
     scenes: {},
     current: null,
+    Debug: p.shared.Debug,
 
     register(name, scene) {
       this.scenes[name] = scene;
@@ -11,13 +12,13 @@ export function createSceneManager(p) {
     change(name) {
       const next = this.scenes[name];
       if (!next) {
-        console.warn(`⚠️ Scene "${name}" not found`);
+        this.Debug.log('system', '[WARN]', `⚠️ Scene "${name}" not found`);
         return;
       }
 
       if (this.current?.cleanup) this.current.cleanup(p);
       this.current = next;
-      console.log(`🎬 Switched to scene: ${name}`);
+      this.Debug.log('system', `🎬 Switched to scene: ${name}`);
       this.current.init?.(p);
     },
 
