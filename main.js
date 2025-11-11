@@ -1,7 +1,7 @@
 import { createTiming } from './core/timing.js';
 import { createRenderer } from './core/renderer.js';
 import { registerControls } from './core/controls.js';
-import { registerSystemEvents, setupCanvasWithAdaptation } from './core/system.js';
+import { registerSystemEvents, setupCanvasWithAdaptation, initializeCanvasPostSetup } from './core/system.js';
 import { createSceneManager } from './core/sceneManager.js';
 import { createGameState } from './core/state.js';
 import { Debug } from './core/debug.js';
@@ -13,7 +13,7 @@ import { MenuScene } from './scenes/menu.js';
 import { Level1Scene } from './scenes/level1.js';
 import { GameOverScene } from './scenes/gameover.js';
 
-import { createPlayer } from './entities/player.js';
+import { Player } from './entities/player.js';
 
 
 export const mainSketch = (p) => {
@@ -26,9 +26,12 @@ export const mainSketch = (p) => {
   };
 
   p.setup = async () => {
+    p.shared.Debug = Debug;
+    p.shared.settings = Settings
+    p.shared.timing = createTiming(p);
+
     setupCanvasWithAdaptation(p);
     
-    p.shared.settings = Settings
     p.pixelDensity(p.shared.settings.pixelDensity);
     p.frameRate(p.shared.settings.fps);
     p.textFont(p.shared.mainFont);
@@ -36,15 +39,15 @@ export const mainSketch = (p) => {
     p.textSize(p.width / 30);
 
 
-    p.shared.Debug = Debug;
+    
     p.shared.parseLevel = parseLevel;
     p.shared.state = createGameState();
     p.shared.renderer = await createRenderer(p);
     p.shared.sceneManager = createSceneManager(p);
     p.shared.ui = createUI(p);
-    p.shared.player = createPlayer(p);
+    p.shared.player = new Player(p);
 
-    p.shared.timing = createTiming(p);
+    
     registerSystemEvents(p);
     registerControls(p);
 
@@ -53,6 +56,9 @@ export const mainSketch = (p) => {
     p.shared.sceneManager.register('level1', Level1Scene);
     p.shared.sceneManager.register('gameover', GameOverScene);    // Start with menu
     p.shared.sceneManager.change('menu');
+
+    // final canvas initialization
+    initializeCanvasPostSetup(p);
   };
 
   p.draw = () => {

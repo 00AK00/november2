@@ -19,7 +19,7 @@ export function createUI(p) {
 
       //WEBGL canvas mode has (0,0) in center
       layer.text(`FPS: ${fps}`, 10, 10);
-      layer.text(`HP: ${hp}`, 10, 30);
+      layer.text(`HP: ${hp}`, 10, 10 + layer.textSize());
     }
   };
 

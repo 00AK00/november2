@@ -10,15 +10,27 @@ export class Level1Scene extends BaseScene {
         super.init();
         this.Debug.log('level', "🎮 Level 1 started");
         const level = this.p.shared.levels.level1;
-        Object.assign(this, this.p.shared.parseLevel(level, this.p));
+        this.levelData = this.p.shared.parseLevel(level, this.p);
+        this.computeMapTransform(this.levelData);
 
         // const this.spawn = levels.level1.this.spawn || { x: 0, y: 0 };
         const player = this.p.shared.player;
-        this.Debug.log('level', `Level 1 this.spawn point at (${this.spawn.x}, ${this.spawn.y})`);
-        player.reset({ x: this.spawn.x, y: this.spawn.y });
+        this.Debug.log('level', `Level 1 this.spawn point at (${this.levelData.spawn.x}, ${this.levelData.spawn.y})`);
+        // const spawnPx = this.worldToScreen(this.levelData.spawn);
+        // this.Debug.log('level', `Level 1 this.spawn point at (${spawnPx.x}, ${spawnPx.y})`);
+        // console.log("Spawning player at:", spawnPx);
+        player.setScene(this);
+        player.reset(this.levelData.spawn);
 
         const r = this.p.shared.renderer;
         r.reset();
+    }
+
+    onResize(w, h) {
+        super.onResize(w, h);
+        this.Debug.log('level', `🔄 Level 1 onResize called: ${w}x${h}`);
+        this.computeMapTransform(this.levelData);
+
     }
 
     onActionStart(action) {
@@ -41,7 +53,10 @@ export class Level1Scene extends BaseScene {
     update() {
         const [r, player, dt] = super.update();
         r.markDirty('uiLayer');
-        r.markDirty('worldLayer');
+        if (this.recentlyLaunchedScene || this.recentlyChangedScene) {
+            this.Debug.log('level', "Marking worldLayer dirty due to recent scene launch/change");
+            r.markDirty('worldLayer');
+        }
         r.markDirty('entitiesLayer');
     }
 
@@ -53,7 +68,11 @@ export class Level1Scene extends BaseScene {
 
         r.use('nes');
         r.drawScene(() => {
-            this.drawBlockingBackground(layers.worldLayer, this.tiles);
+            if (this.recentlyLaunchedScene || this.recentlyChangedScene) {
+                // this.drawBlockingBackground(layers.worldLayer, this.tiles);
+                this.drawBlockingBackgroundTransformed(layers.worldLayer, this.levelData.tiles);
+            }
+
             // this.drawRainbowBar(layers.worldLayer);
             player.draw(layers.entitiesLayer);
             ui.draw(layers.uiLayer);

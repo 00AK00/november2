@@ -8,10 +8,16 @@ export function parseLevel(levelData, p) {
     entities: [],
     spawn: null,
     goal: null,
-    tileSize: tileSize || 32
+    tileSize: tileSize || 32,
+    cols: null,
+    rows: null,
   };
 
-  const toWorld = (x, y) => ({ x: x * tileSize, y: y * tileSize });
+  // const toWorld = (x, y) => ({ x: x * tileSize, y: y * tileSize });
+  const toWorld = (x, y) => ({ x: x, y: y });
+
+  result.cols = layers.layout[0].length;
+  result.rows = layers.layout.length;
 
   // Layout parsing
   for (let y = 0; y < layers.layout.length; y++) {

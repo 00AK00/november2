@@ -41,6 +41,8 @@ export class MenuScene extends BaseScene {
             // UI layer (text)
             if (r.layerDirty.uiLayer) {
                 layers.uiLayer.fill(255);
+                layers.uiLayer.textAlign(this.p.CENTER, this.p.CENTER);
+                layers.uiLayer.textSize(layers.uiLayer.width / 60);
                 layers.uiLayer.text("Main Menu\nPress any key to start", layers.uiLayer.width / 2, layers.uiLayer.height / 2);
             }
         });

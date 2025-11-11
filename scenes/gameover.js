@@ -39,6 +39,8 @@ export class GameOverScene extends BaseScene {
             }
             // UI layer (text)
             if (r.layerDirty.uiLayer) {
+                layers.uiLayer.textAlign(this.p.CENTER, this.p.CENTER);
+                layers.uiLayer.textSize(layers.uiLayer.width / 60);
                 layers.uiLayer.fill(255);
                 layers.uiLayer.text(`Game Over\nPress ${this.p.shared.controls.map.pause} for Menu`, layers.uiLayer.width/2, layers.uiLayer.height/2);
             }

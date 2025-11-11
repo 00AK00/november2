@@ -12,6 +12,10 @@ export function createSceneManager(p) {
       this.scenes[name] = new SceneClass(p);
     },
 
+    onResize(w, h) {
+      if (this.current?.onResize) this.current.onResize(w, h);
+    },
+
     change(name) {
       const next = this.scenes[name];
       if (!next) {
