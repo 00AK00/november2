@@ -12,7 +12,7 @@ export class Level1Scene extends BaseScene {
         const [r, player] = super.init();
         this.Debug.log('level', "🎮 Level 1 started");
         this.registerEntity(player);
-        
+
     }
 
     onKeyPressed(key, keyCode) {
@@ -41,7 +41,13 @@ export class Level1Scene extends BaseScene {
         r.drawScene(() => {
             if (this.recentlyLaunchedScene || this.recentlyChangedScene) {
                 // this.drawBlockingBackground(layers.worldLayer, this.tiles);
-                this.drawBlockingBackgroundTransformed(layers.worldLayer, this.levelData.tiles);
+                // this.drawBlockingBackgroundTransformed(layers.worldLayer, this.levelData.tiles);
+
+                this.drawOrganicBlockingBackground(layers.worldLayer, this.levelData.tiles, {
+                    noiseScale: 0.5,
+                    noiseAmp: 0.4,
+                    cornerSmooth: 0.45
+                });
             }
 
             // this.drawRainbowBar(layers.worldLayer);

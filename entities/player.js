@@ -24,10 +24,10 @@ export class Player extends BaseEntity {
         this.physicsParticles.push(this.mainChild);
 
         // 🌿 arrange fronds along an arc with child + grandchild chains
-        const spread = 1.0;   // horizontal spacing
-        const height = 0.4;   // how tall the arc is
-        // const fronds = [-spread, -spread / 2, 0, spread / 2, spread]; // five fronds
-        const fronds = [-spread, 0, spread]; // three fronds
+        const spread = 2.0;   // horizontal spacing
+        const height = 0.6;   // how tall the arc is
+        const fronds = [-spread, -spread / 2, 0, spread / 2, spread]; // five fronds
+        // const fronds = [-spread, 0, spread]; // three fronds
 
         for (let i = 0; i < fronds.length; i++) {
             const x = fronds[i];
@@ -91,6 +91,15 @@ export class Player extends BaseEntity {
     }
 
     drawParticleTree(layer, particle, opts = {}) {
+        // this.drawParticleTree(layer, this.mainPhysicsParticle, {
+        //     drawNodes: true,
+        //     drawMainNode: true,
+        //     nodeColor: [0, 155, 50],
+        //     springColor: [0, 155, 50],
+        //     mainColor: [255, 50, 50],
+        //     springWeight: 2.5,
+        //     nodeRadius: 3
+        // });
         if (!particle || !this.scene) return;
 
         const {
@@ -142,15 +151,43 @@ export class Player extends BaseEntity {
     draw(layer) {
         if (!this.visible || !this.scene) return;
         const { x, y } = this.scene.worldToScreen(this.worldPos);
-        // Draw recursive spring structure
-        this.drawParticleTree(layer, this.mainPhysicsParticle, {
-            drawNodes: false,
-            drawMainNode: true,
-            nodeColor: [0, 155, 50],
-            springColor: [0, 155, 50],
-            mainColor: [255, 50, 50],
-            springWeight: 2.5,
-            nodeRadius: 3
-        });
+
+        layer.noFill();
+        layer.stroke(0, 155, 50, 200);
+        layer.strokeWeight(4);
+
+        for (const indexes of this.frond_particle_indexes) {
+            const sp = this.scene.worldToScreen(this.physicsParticles[indexes[0]].pos); // start
+            const mp = this.scene.worldToScreen(this.physicsParticles[indexes[1]].pos); // mid
+            const ep = this.scene.worldToScreen(this.physicsParticles[indexes[2]].pos); // end
+
+            // Direction from start to end
+            const dx = ep.x - sp.x;
+            const dy = ep.y - sp.y;
+
+            // Length of frond (for curvature scaling)
+            const len = Math.sqrt(dx * dx + dy * dy);
+
+            // Perpendicular normal (dx,dy) rotated 90deg
+            const nx = -dy / len;
+            const ny = dx / len;
+
+            // Bend amount — tune this for more/less curve
+            const curvature = len * 0.25;  // 0.2–0.35 works well
+
+            // Control points: mid ± perpendicular offset
+            const c1 = { x: mp.x + nx * curvature, y: mp.y + ny * curvature };
+            const c2 = { x: mp.x - nx * curvature, y: mp.y - ny * curvature };
+
+            // Final Bézier draw
+            layer.bezier(
+                sp.x, sp.y,       // start
+                c1.x, c1.y,       // control 1
+                c2.x, c2.y,       // control 2
+                ep.x, ep.y        // end
+            );
+        }
+
+        
     }
 }

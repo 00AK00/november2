@@ -30,6 +30,9 @@ http-server -c-1
 - Push to grab or release when near something grab-able
 - Push to sink or float when in open water
 - Push to grab and attack when near prey/enemy
+- Grab fish to catch a ride (Nelson)
+- If the bottom is sandy, particles could be picked up and move with the currents etc... (Nelson)
+- grabbing those sandy regions doesnt fully hold you down, but does add to your mass (impact bouyancy etc)
 
 ## Currents
 Currents are shown by environmental hints such as plankton, bioluminscent organisms, sea week, sand, bubbles, etc moving in a direction. Currents can be linear, curved, eddy currents, or even waves that push you out of the water!
