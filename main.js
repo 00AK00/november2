@@ -23,6 +23,7 @@ export const mainSketch = (p) => {
     // Load any built-in or custom font to satisfy WebGL text
     p.shared.mainFont = p.loadFont('https://cdnjs.cloudflare.com/ajax/libs/topcoat/0.8.0/font/SourceCodePro-Regular.otf');
     p.shared.levels = p.loadJSON('./config/levels.json');
+    p.shared.chroma = p.loadJSON('./config/chroma.json');
   };
 
   p.setup = async () => {

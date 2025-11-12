@@ -20,7 +20,7 @@ This is a sophisticated WebGL-based game using p5.js in instance mode with a mod
 ```javascript
 // Standard pattern for scene drawing
 const r = p.shared.renderer;
-r.use('default'); // or custom shader
+r.use('chroma'); // or custom shader
 // draw operations here
 ```
 

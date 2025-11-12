@@ -153,7 +153,9 @@ export class Player extends BaseEntity {
         const { x, y } = this.scene.worldToScreen(this.worldPos);
 
         layer.noFill();
-        layer.stroke(0, 155, 50, 200);
+        const chroma = this.p.shared.chroma;
+        const pc = chroma.player;
+        layer.stroke(pc[0], pc[1], pc[2], pc[3]);
         layer.strokeWeight(4);
 
         for (const indexes of this.frond_particle_indexes) {
@@ -188,6 +190,6 @@ export class Player extends BaseEntity {
             );
         }
 
-        
+
     }
 }

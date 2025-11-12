@@ -276,7 +276,9 @@ export class BaseScene {
 
     layer.clear();
     layer.noStroke();
-    layer.fill(110, 130, 160);
+    const chroma = this.p.shared.chroma;
+    const pc = chroma.terrain;
+    layer.fill(pc[0], pc[1], pc[2], pc[3]);
 
     const regions = this.extractTileRegions(tiles);
 

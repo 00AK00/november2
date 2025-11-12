@@ -108,7 +108,7 @@ export async function createRenderer(p) {
 
       await this.loadShader('default', './shaders/default.vert', './shaders/default.frag');
       // await this.loadShader('nes', './shaders/nes.vert', './shaders/nes.frag');
-      await this.loadShader('monet', './shaders/monet.vert', './shaders/monet.frag');
+      await this.loadShader('chroma', './shaders/chroma.vert', './shaders/chroma.frag');
     },
 
     use(shaderName = 'default') {
@@ -127,11 +127,18 @@ export async function createRenderer(p) {
         shader.setUniform('uResolution', [p.width, p.height]);
         shader.setUniform('uTime', p.millis() / 1000.0);
 
+        const chroma = p.shared.chroma;
+        shader.setUniform('uChromaPlayer', chroma.player.map(c => c / 255));
+        shader.setUniform('uChromaEnemy', chroma.enemy.map(c => c / 255));
+        shader.setUniform('uChromaTerrain', chroma.terrain.map(c => c / 255));
+        shader.setUniform('uChromaBackground', chroma.background.map(c => c / 255));
+        shader.setUniform('uChromaUI', chroma.ui.map(c => c / 255));
+
       } catch (err) {
         console.error('Error setting shader uniforms:', err);
         // Ignore errors if uniforms don't exist
       }
-      
+
 
       p.push();
       p.translate(-p.width / 2, -p.height / 2);
@@ -195,8 +202,12 @@ export async function createRenderer(p) {
       this.Debug.log('renderer', `Compositing layers onto main canvas at frame ${this.frameCount} - ${p.frameCount}`);
       // Composite onto main canvas
 
-      this.base.clear();
-      p.clear();
+      // this.base.clear();
+      const chroma = p.shared.chroma;
+      const bg = chroma.background;
+      this.base.background(bg[0], bg[1], bg[2], bg[3]);
+      // p.clear();
+
       const scaleFactor = p.shared.settings.graphicsScaling;
       this.base.image(this.layers.backgroundLayer, -p.width / 2, -p.height / 2, p.width, p.height);
       this.base.image(this.layers.worldLayer, -p.width / 2, -p.height / 2, p.width, p.height);
@@ -214,13 +225,13 @@ export async function createRenderer(p) {
 
     resize(w, h) {
       this.base.resizeCanvas(w, h);
-      const scaling =  p.shared.settings.graphicsScaling
+      const scaling = p.shared.settings.graphicsScaling
       Object.entries(this.layers).forEach(([name, layer]) => {
-        layer.resizeCanvas(w/scaling, h/scaling);
+        layer.resizeCanvas(w / scaling, h / scaling);
 
-        
+
         this.layerDirty[name] = true; // mark dirty after resize
-        this.Debug.log('renderer', `🔄 Resized layer "${name}" to (${w/scaling}, ${h/scaling})`);
+        this.Debug.log('renderer', `🔄 Resized layer "${name}" to (${w / scaling}, ${h / scaling})`);
       });
     },
 

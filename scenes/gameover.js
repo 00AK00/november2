@@ -30,19 +30,17 @@ export class GameOverScene extends BaseScene {
     draw() {
         const r = this.p.shared.renderer;
         const layers = r.layers;
-        r.use('default');
+        r.use('chroma');
 
         r.drawScene(() => {
-            // Background layer
-            if (r.layerDirty.backgroundLayer) {
-                layers.backgroundLayer.background(80, 0, 0);
-            }
             // UI layer (text)
             if (r.layerDirty.uiLayer) {
                 layers.uiLayer.textAlign(this.p.CENTER, this.p.CENTER);
                 layers.uiLayer.textSize(layers.uiLayer.width / 60);
-                layers.uiLayer.fill(255);
-                layers.uiLayer.text(`Game Over\nPress ${this.p.shared.controls.map.pause} for Menu`, layers.uiLayer.width/2, layers.uiLayer.height/2);
+                const chroma = this.p.shared.chroma;
+                const pc = chroma.ui;
+                layers.uiLayer.fill(pc[0], pc[1], pc[2], pc[3]);
+                layers.uiLayer.text(`Game Over\nPress ${this.p.shared.controls.map.pause} for Menu`, layers.uiLayer.width / 2, layers.uiLayer.height / 2);
             }
         });
     }
