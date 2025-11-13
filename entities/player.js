@@ -7,7 +7,7 @@ export class Player extends BaseEntity {
         // this.buoyancy = -0.04;
         // this.sinkancy = 0.1;
         this.buoyancy = -1;
-        this.ambient_buoyancy = -0.1;
+        this.ambient_buoyancy = -0.05;
         this.sinkancy = 3;
         this.health = 100;
         this.moving = { moveLeft: false, moveRight: false, moveUp: false, moveDown: false, sink: false };
@@ -69,16 +69,10 @@ export class Player extends BaseEntity {
         if (this.moving.sink) {
             mp.addForce(0, this.sinkancy);
         } else {
-            // mp.addForce(0, this.buoyancy);
-            mp.cascadeForce(0, this.buoyancy, 0.5);
-            // this.mainChild.addForce(0, this.buoyancy);
+            mp.cascadeForce(0, this.buoyancy, 0.8);
         }
 
         for (const particle of this.physicsParticles) {
-            // clamp vertical speed
-            // const maxYVel = 5;
-            // if (particle.vel.y > maxYVel) particle.vel.y = maxYVel;
-            // if (particle.vel.y < -maxYVel) particle.vel.y = -maxYVel;
             if (!particle.main) {
                 particle.addForce(0, this.ambient_buoyancy);
             }
@@ -89,65 +83,6 @@ export class Player extends BaseEntity {
         this.worldPos.y = mp.pos.y;
         this.pxSize = this.size * this.scene.mapTransform.tileSizePx;
     }
-
-    drawParticleTree(layer, particle, opts = {}) {
-        // this.drawParticleTree(layer, this.mainPhysicsParticle, {
-        //     drawNodes: true,
-        //     drawMainNode: true,
-        //     nodeColor: [0, 155, 50],
-        //     springColor: [0, 155, 50],
-        //     mainColor: [255, 50, 50],
-        //     springWeight: 2.5,
-        //     nodeRadius: 3
-        // });
-        if (!particle || !this.scene) return;
-
-        const {
-            drawNodes = true,
-            drawMainNode = false,
-            nodeColor = [0, 255, 0],
-            springColor = [0, 255, 0],
-            mainColor = [255, 100, 100],
-            springWeight = 2,
-            nodeRadius = 3
-        } = opts;
-
-        const { x, y } = this.scene.worldToScreen(particle.pos);
-
-        // Draw springs between parent and children
-        if (particle.children && particle.children.length > 0) {
-            layer.stroke(...springColor);
-            layer.strokeWeight(springWeight);
-
-            for (const child of particle.children) {
-                const { x: cx, y: cy } = this.scene.worldToScreen(child.pos);
-                layer.line(x, y, cx, cy);
-                this.drawParticleTree(layer, child, opts); // recursive call
-            }
-        }
-
-        // Draw the particle node
-        if (drawNodes) {
-            layer.noStroke();
-            if (!particle.main) {
-                layer.fill(...nodeColor);
-            } else {
-                layer.fill(...mainColor);
-            }
-            layer.circle(x, y, nodeRadius * 2);
-            layer.strokeWeight(springWeight);
-            layer.stroke(...springColor);
-        }
-
-        if (drawMainNode && particle.main) {
-            layer.noStroke();
-            layer.fill(...mainColor);
-            layer.circle(x, y, nodeRadius * 2);
-            layer.strokeWeight(springWeight);
-            layer.stroke(...springColor);
-        }
-    }
-
     draw(layer) {
         if (!this.visible || !this.scene) return;
         const { x, y } = this.scene.worldToScreen(this.worldPos);

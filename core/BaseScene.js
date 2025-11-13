@@ -67,9 +67,7 @@ export class BaseScene {
       for (const particle of e.physicsParticles) {
         this.resolveTileCollisions(particle);
       }
-      // if (!e.visible || !e.mainPhysicsParticle) continue;
-      // this.resolveTileCollisions(e.mainPhysicsParticle);
-      // later: this.resolveEntityCollisions(e);
+      // TODO: this.resolveEntityCollisions(e);
     }
   }
 

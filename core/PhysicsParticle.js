@@ -43,7 +43,11 @@ export class PhysicsParticle {
         }
     }
 
-    integrate(dt) {
+    integrateWithoutChildren(dt) {
+        this.integrate(dt, false);
+    }
+
+    integrate(dt, withChildren = true) {
         if (this.fixed) return;
 
         // --- apply Newtonian integration ---
@@ -56,10 +60,11 @@ export class PhysicsParticle {
         this.pos.x += this.vel.x * dt;
         this.pos.y += this.vel.y * dt;
 
-        // --- propagate spring and force behavior ---
-        for (const child of this.children) {
-            this.applySpringToChild(child, dt);
-            child.integrate(dt);
+        if (withChildren) {
+            for (const child of this.children) {
+                this.applySpringToChild(child, dt);
+                child.integrate(dt);
+            }
         }
 
         // Reset force after integration
@@ -124,9 +129,16 @@ export class PhysicsParticle {
     }
 
     createChild(offsetX, offsetY, scale = 0.5) {
-        const child = new PhysicsParticle(this.pos.x, this.pos.y, this.mass * scale);
-        child.offsets = { x: offsetX / 2, y: offsetY / 2 };
+        const child = new PhysicsParticle(
+            this.pos.x + offsetX,
+            this.pos.y + offsetY,
+            this.mass * scale
+        );
+
+        child.offsets = { x: offsetX, y: offsetY };  // NOT divided
+        child.restLength = Math.hypot(offsetX, offsetY);
         child.radius = this.radius * scale;
+
         this.children.push(child);
         return child;
     }

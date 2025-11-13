@@ -44,7 +44,7 @@ export class Level1Scene extends BaseScene {
                 // this.drawBlockingBackgroundTransformed(layers.worldLayer, this.levelData.tiles);
 
                 this.drawOrganicBlockingBackground(layers.worldLayer, this.levelData.tiles, {
-                    noiseScale: 0.5,
+                    noiseScale: 3.5,
                     noiseAmp: 0.4,
                     cornerSmooth: 0.45
                 });

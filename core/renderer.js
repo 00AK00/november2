@@ -116,11 +116,16 @@ export async function createRenderer(p) {
     },
 
     applyPostShader(shaderName = 'default') {
+
+      if (p.shared.settings.enableShaders === false) {
+        shaderName = 'default';
+      }
       const shader = this.shaders[shaderName];
       if (!shader) {
         this.Debug.log('renderer', '[WARN]', `⚠️ Post shader "${shaderName}" not found.`);
         return;
       }
+
       p.shader(shader);
       try {
         shader.setUniform('tex0', this.base);
@@ -139,13 +144,11 @@ export async function createRenderer(p) {
         // Ignore errors if uniforms don't exist
       }
 
-
       p.push();
       p.translate(-p.width / 2, -p.height / 2);
       p.rectMode(p.CORNER);
       p.rect(0, 0, p.width, p.height);
       p.pop();
-      p.resetShader();
 
 
     },

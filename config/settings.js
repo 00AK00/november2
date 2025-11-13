@@ -1,6 +1,7 @@
 export const Settings = {
     fps: 30,
     pixelDensity: 1,
-    graphicsScaling: 2,
-    debounceTime: 30
+    graphicsScaling: 1.5,
+    debounceTime: 30, // ms
+    enableShaders: false,
   };

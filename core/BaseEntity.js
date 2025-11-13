@@ -1,4 +1,4 @@
-import { PhysicsParticle } from '../core/physics.js';
+import { PhysicsParticle } from '../core/PhysicsParticle.js';
 
 export class BaseEntity {
   constructor(p) {
@@ -40,14 +40,17 @@ export class BaseEntity {
 
   update(dt) {
     if (!this.visible) return;
+    for (const p of this.physicsParticles) p.clearContacts();
+    for (const p of this.physicsParticles) p.integrateWithoutChildren(dt);
 
-    this.physicsParticles[0].integrate(dt);
-    this.physicsParticles[0].clearContacts();
 
-    if (this.mainPhysicsParticle) {
-      this.worldPos.x = this.mainPhysicsParticle.pos.x;
-      this.worldPos.y = this.mainPhysicsParticle.pos.y;
-    }
+    // this.physicsParticles[0].integrate(dt);
+    // this.physicsParticles[0].clearContacts();
+
+    // if (this.mainPhysicsParticle) {
+    //   this.worldPos.x = this.mainPhysicsParticle.pos.x;
+    //   this.worldPos.y = this.mainPhysicsParticle.pos.y;
+    // }
   }
 
   draw(layer) {

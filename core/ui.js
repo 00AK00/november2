@@ -8,7 +8,9 @@ export function createUI(p) {
     draw(layer) {
       if (!this.visible) return;
 
-      layer.fill(255);
+      const chroma = p.shared.chroma;
+      const pc = chroma.ui;
+      layer.fill(pc[0], pc[1], pc[2], pc[3]);
       layer.textAlign(p.LEFT, p.TOP);
       layer.textSize(layer.width / 80);
 
