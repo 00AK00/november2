@@ -107,8 +107,17 @@ export async function createRenderer(p) {
       });
 
       await this.loadShader('default', './shaders/default.vert', './shaders/default.frag');
-      // await this.loadShader('nes', './shaders/nes.vert', './shaders/nes.frag');
       await this.loadShader('chroma', './shaders/chroma.vert', './shaders/chroma.frag');
+
+      // we could be stacking these as like the texture level shaders
+
+      // await this.loadShader('player', './shaders/player.vert', './shaders/player.frag');
+      // await this.loadShader('enemy', './shaders/enemy.vert', './shaders/enemy.frag');
+      // await this.loadShader('terrain', './shaders/terrain.vert', './shaders/terrain.frag');
+      // await this.loadShader('background', './shaders/background.vert', './shaders/background.frag');
+
+
+      // then there could be a final layer mastering one also - water color effect would be nice
     },
 
     use(shaderName = 'default') {
@@ -216,8 +225,8 @@ export async function createRenderer(p) {
       this.base.image(this.layers.worldLayer, -p.width / 2, -p.height / 2, p.width, p.height);
       this.base.image(this.layers.entitiesLayer, -p.width / 2, -p.height / 2, p.width, p.height);
       this.base.image(this.layers.uiLayer, -p.width / 2, -p.height / 2, p.width, p.height);
-
       this.applyPostShader(this.activePostShader);
+      p.resetShader();
 
       // Check renderer readiness
       if (!this.ready && Object.keys(this._pendingShaders).length === 0) {
