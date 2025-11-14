@@ -17,7 +17,7 @@ export class PhysicsParticle {
         this.springK = 0.2;
         this.springDamping = 0.85;
 
-        this.damping = 0.95;  // velocity damping
+        this.damping = 1.0;  // velocity damping
         this.forceDamping = 0.0;
 
         this.contactAxes = { x: false, y: false };

@@ -36,7 +36,7 @@ export function parseLevel(levelData, p) {
       const ch = layers.currents[y][x];
       if (currentsLegend[ch]) {
         const pos = toWorld(x, y);
-        result.currents.push({ ...pos, ...currentsLegend[ch] });
+        result.currents.push({ legend: ch,...pos, ...currentsLegend[ch] });
       }
     }
   }

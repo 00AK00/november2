@@ -48,6 +48,7 @@ export class Level1Scene extends BaseScene {
                     noiseAmp: 0.4,
                     cornerSmooth: 0.45
                 });
+                this.drawCurrents(layers.worldLayer);
             }
 
             // this.drawRainbowBar(layers.worldLayer);

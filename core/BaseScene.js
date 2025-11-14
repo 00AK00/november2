@@ -12,6 +12,7 @@ export class BaseScene {
     this.lastSceneChangeFrameNumber = 0;
     this.entities = [];
     this.tileLookup = null;
+    this.currentsLookup = null;
     this.physicsWorld = new PhysicsWorld({
       getTile: this.getTile.bind(this),
       restitution: 0.2,
@@ -29,14 +30,20 @@ export class BaseScene {
     this.Debug.log('level', `📜 ${this.constructor.name} initialized`);
     this.sceneFrameCount = 0;
     const player = this.p.shared.player;
+    this.padding = this.calculatePadding();
     if (this.levelData) {
-      this.computeMapTransform(this.levelData);
+      this.computeMapTransform(this.levelData, { paddingPx: this.padding });
       player.setScene(this);
       player.reset(this.levelData.spawn);
       this.tileLookup = new Map();
       for (const t of this.levelData.tiles) {
         const key = `${t.x},${t.y}`;
         this.tileLookup.set(key, t);
+      }
+      this.currentsLookup = new Map();
+      for (const c of this.levelData.currents) {
+        const key = `${c.x},${c.y}`;
+        this.currentsLookup.set(key, c);
       }
     }
     const r = this.p.shared.renderer;
@@ -57,6 +64,16 @@ export class BaseScene {
     // 1. apply entity forces
     for (const entity of this.entities) {
       entity.applyForces(dt);
+      const p = entity.mainPhysicsParticle;
+      if (p) {
+        const cx = Math.floor(p.pos.x);
+        const cy = Math.floor(p.pos.y);
+        const current = this.getCurrent(cx, cy);
+        if (current) {
+          this.Debug.log('level', `Applying current to entity at (${cx},${cy}): dx=${current.dx}, dy=${current.dy}`);
+          p.addForce(current.dx, current.dy);
+        }
+      }
     }
 
     // 2. gather root particles (for example, each entity exposes mainPhysicsParticle)
@@ -84,22 +101,55 @@ export class BaseScene {
   }
 
   getTile(x, y) {
-    if (!this.tileLookup) return null;
+    if (!this.tileLookup || !this.levelData) return null;
+
+    const cols = this.levelData.cols;
+    const rows = this.levelData.rows;
+
+    // 1. Outside playable area → implicit solid boundary
+    if (x < 0 || y < 0 || x >= cols || y >= rows) {
+      return {
+        x,
+        y,
+        solid: true,
+        type: "boundary"
+      };
+    }
+
+    // 2. Inside world → return actual tile
     const tile = this.tileLookup.get(`${x},${y}`);
     if (!tile) return null;
 
-    // Tag anything with type === 'wall' as solid
     return {
       ...tile,
-      solid: tile.type === 'wall'
+      solid: tile.type === "wall"
     };
+  }
+
+  // getTile(x, y) {
+  //   if (!this.tileLookup) return null;
+  //   const tile = this.tileLookup.get(`${x},${y}`);
+  //   if (!tile) return null;
+
+  //   // Tag anything with type === 'wall' as solid
+  //   return {
+  //     ...tile,
+  //     solid: tile.type === 'wall'
+  //   };
+  // }
+
+  getCurrent(x, y) {
+    if (!this.currentsLookup) return null;
+    return this.currentsLookup.get(`${x},${y}`) || null;
   }
 
   onKeyPressed(key, keyCode) {
     this.Debug.log('level', `Key pressed in ${this.constructor.name}: ${key} (${keyCode})`);
-    if (this.p.keyIsPressed && this.p.key === 'p') {
-      this.Debug.log('level', `Toggled physics debug: ${this.physicsWorld.debug}`);
-      this.physicsWorld.DEBUG_COLLISIONS = !this.physicsWorld.DEBUG_COLLISIONS;
+    if (this.p.keyIsPressed && this.p.key === 's') {
+      this.p.shared.settings.enableShaders = !this.p.shared.settings.enableShaders;
+      this.Debug.log('level', `Toggled shaders: ${this.p.shared.settings.enableShaders}`);
+      // this.Debug.log('level', `Toggled physics debug: ${this.physicsWorld.debug}`);
+      // this.physicsWorld.DEBUG_COLLISIONS = !this.physicsWorld.DEBUG_COLLISIONS;
     }
   }
 
@@ -290,6 +340,60 @@ export class BaseScene {
     }
   }
 
+  drawCurrents(layer, drawArrows = true) {
+    if (!this.currentsLookup) return;
+
+    const chroma = this.p.shared.chroma;
+    const pc = chroma.current;
+
+    layer.fill(pc[0], pc[1], pc[2], pc[3]);
+
+    const { tileSizePx, originPx } = this.mapTransform;
+
+    for (const [key, c] of this.currentsLookup.entries()) {
+      layer.noStroke();
+      const { x, y, dx, dy } = c;
+
+      // convert world → screen
+      const { x: sx, y: sy } = this.worldToScreen({ x, y });
+
+      // draw current tile box
+      layer.rect(sx, sy, tileSizePx, tileSizePx);
+
+      if (drawArrows) {
+        // arrow center
+        const cx = sx + tileSizePx * 0.5;
+        const cy = sy + tileSizePx * 0.5;
+
+        // arrow direction scaled for visual clarity
+        const ax = dx * (tileSizePx * 0.01);
+        const ay = dy * (tileSizePx * 0.01);
+
+        layer.stroke(0);
+        layer.strokeWeight(1);
+        layer.line(cx, cy, cx + ax, cy + ay);
+
+        // Simple arrowhead
+        const angle = Math.atan2(ay, ax);
+        const headLen = tileSizePx * 0.15;
+
+        layer.line(
+          cx + ax,
+          cy + ay,
+          cx + ax - headLen * Math.cos(angle - Math.PI / 6),
+          cy + ay - headLen * Math.sin(angle - Math.PI / 6)
+        );
+
+        layer.line(
+          cx + ax,
+          cy + ay,
+          cx + ax - headLen * Math.cos(angle + Math.PI / 6),
+          cy + ay - headLen * Math.sin(angle + Math.PI / 6)
+        );
+      }
+    }
+  }
+
   drawRainbowBar(layer, tileSize = 32) {
     if (!layer) {
       this.Debug.log('level', '⚠️ drawRainbowBar: No layer provided');
@@ -340,7 +444,8 @@ export class BaseScene {
   onResize(w, h) {
     this.Debug.log('level', `🔄 Scene onResize called: ${w}x${h}`);
     this.lastSceneChangeFrameNumber = this.sceneFrameCount;
-    if (this.levelData) this.computeMapTransform(this.levelData);
+    this.padding = this.calculatePadding();
+    if (this.levelData) this.computeMapTransform(this.levelData, { paddingPx: this.padding });
   }
 
   onActionStart(action) {
@@ -352,6 +457,17 @@ export class BaseScene {
   onActionEnd(action) {
     const player = this.p.shared.player;
     player?.onActionEnd?.(action);
+  }
+
+  calculatePadding() {
+    const p = this.p;
+    const W = p.width;
+    const H = p.height;
+    const scale = this.p.shared.settings?.paddingRatio ?? 1;
+
+    const paddingPx = Math.floor(Math.min(W, H) * scale);
+    this.Debug.log('level', `Calculated padding: ${paddingPx}px (scale: ${scale})`);
+    return paddingPx;
   }
 
   computeMapTransform(levelData, opts = {}) {

@@ -3,5 +3,6 @@ export const Settings = {
     pixelDensity: 1,
     graphicsScaling: 1.5,
     debounceTime: 30, // ms
-    enableShaders: true,
+    enableShaders: false,
+    paddingRatio: 0.02, 
   };

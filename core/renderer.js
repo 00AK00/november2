@@ -102,6 +102,7 @@ export async function createRenderer(p) {
         shader.setUniform('uChromaTerrain', chroma.terrain.map(c => c / 255));
         shader.setUniform('uChromaBackground', chroma.background.map(c => c / 255));
         shader.setUniform('uChromaUI', chroma.ui.map(c => c / 255));
+        shader.setUniform('uChromaCurrents', chroma.current.map(c => c / 255));
 
       } catch (err) {
         console.error('Error setting shader uniforms:', err);
