@@ -17,10 +17,9 @@ export class Player extends BaseEntity {
         this.size = 1.0;
 
         this.speed = 40;
-        this.sinkancy = 30;
-
-        // Global upward drift for whole anemone
-        this.baseBuoyancy = -10;
+        this.speed = p.shared.settings.playerSpeed || 40;
+        this.sinkancy = p.shared.settings.sinkancy || 30;
+        this.baseBuoyancy = p.shared.settings.buoyancy || -10;
 
         this.moving = {
             moveLeft: false,
@@ -133,10 +132,11 @@ export class Player extends BaseEntity {
         layer.stroke(pc[0], pc[1], pc[2], pc[3]);
         layer.strokeWeight(4);
 
-        // for (const particle of this.physicsParticles) {
-        //     const pos = this.scene.worldToScreen(particle.pos);
-        //     layer.circle(pos.x, pos.y, 5);
-        // }
+        for (const particle of this.physicsParticles) {
+            const pos = this.scene.worldToScreen(particle.pos);
+            // const pos = particle.pos;
+            layer.circle(pos.x, pos.y, 5);
+        }
 
         for (const indexes of this.frond_particle_indexes) {
             const sp = this.scene.worldToScreen(this.physicsParticles[indexes[0]].pos); // start
