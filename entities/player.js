@@ -6,7 +6,7 @@ const FROND_SPREAD = 0.32;
 const FROND_HEIGHT = 0.38;
 const SPRING_K = 1.2;
 const SPRING_DAMP = 0.99;
-const FROND_MASS = 12;
+const FROND_MASS = 1;
 const STEM_MASS = 4;
 const ROOT_MASS = 12;
 

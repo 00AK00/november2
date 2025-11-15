@@ -120,6 +120,9 @@ export class BaseScene {
   registerEntity(entity) {
     this.entities.push(entity);
     entity.setScene(this);
+    if (typeof entity.initAmbientEntity === "function") {
+      entity.initAmbientEntity();
+    }
   }
 
   getTile(x, y) {

@@ -9,4 +9,7 @@ export const Settings = {
     playerSinkancy: 6,
     playerBuoyancy: -3.5,
     playerStrokeWeight: 0.006,
+    ambientSpeed: 40,
+    ambientSinkancy: 2,
+    ambientBuoyancy: -.2,
   };

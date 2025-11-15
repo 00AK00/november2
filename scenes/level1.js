@@ -1,4 +1,5 @@
 import { BaseScene } from '../core/BaseScene.js';
+import { Plankton } from '../entities/plankton.js';
 
 export class Level1Scene extends BaseScene {
     constructor(p) {
@@ -10,6 +11,11 @@ export class Level1Scene extends BaseScene {
         const level = this.p.shared.levels.level1;
         this.levelData = this.p.shared.parseLevel(level, this.p);
         const [r, player] = super.init();
+
+        for (let i = 0; i < 30; i++) {
+            const plankton = new Plankton(this.p);
+            this.registerEntity(plankton);
+        }
         this.Debug.log('level', "🎮 Level 1 started");
 
     }
@@ -53,7 +59,10 @@ export class Level1Scene extends BaseScene {
                 this.drawCurrentsLayer(layers.worldLayer);
             }
 
-            player.draw(layers.entitiesLayer);
+            for (const entity of this.entities) {
+                entity.draw(layers.entitiesLayer);
+            }
+            // player.draw(layers.entitiesLayer);
             ui.draw(layers.uiLayer);
         });
     }

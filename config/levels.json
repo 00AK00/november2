@@ -69,7 +69,7 @@
 
     "currentsLegend": {
       "q": { "dx":5, "dy": 0, "style": "current", "params": {} },
-      "w": { "dx": 0, "dy": 0, "style": "current", "params": {} }
+      "w": { "dx": -4, "dy": 10, "style": "current", "params": {} }
     },
 
     "entityLegend": {
