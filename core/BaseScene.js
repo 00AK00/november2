@@ -1,8 +1,7 @@
 import { PhysicsWorld } from './PhysicsWorld.js';
 import { PhysicsSolver } from './PhysicsSolver.js';
 import { GeometryTools } from './GeometryTools.js';
-import * as DrawTools from './staticDrawingTools.js';
-
+import { SceneDrawingMixin } from './SceneDrawingMixin.js';
 export class BaseScene {
   constructor(p) {
     this.p = p;
@@ -82,6 +81,23 @@ export class BaseScene {
       }
     }
 
+    // NEED TO WORK ON MAKING THIS VERSION WORK VVV
+
+    // for (const entity of this.entities) {
+    //   entity.applyForces(dt);
+
+    //   if (entity.physicsParticles && entity.physicsParticles.length > 0) {
+    //     for (const particle of entity.physicsParticles) {
+    //       const cx = Math.floor(particle.pos.x);
+    //       const cy = Math.floor(particle.pos.y);
+    //       const current = this.getCurrent(cx, cy);
+    //       if (current) {
+    //         particle.addForce(current.dx, current.dy);
+    //       }
+    //     }
+    //   }
+    // }
+
     // 2. gather root particles (for example, each entity exposes mainPhysicsParticle)
     const roots = [];
     for (const entity of this.entities) {
@@ -131,18 +147,6 @@ export class BaseScene {
       solid: tile.type === "wall"
     };
   }
-
-  // getTile(x, y) {
-  //   if (!this.tileLookup) return null;
-  //   const tile = this.tileLookup.get(`${x},${y}`);
-  //   if (!tile) return null;
-
-  //   // Tag anything with type === 'wall' as solid
-  //   return {
-  //     ...tile,
-  //     solid: tile.type === 'wall'
-  //   };
-  // }
 
   getCurrent(x, y) {
     if (!this.currentsLookup) return null;
@@ -298,41 +302,6 @@ export class BaseScene {
       y: (pt.y - originPx.y) / tileSizePx
     };
   }
-
-  drawTerrainOrganic(layer, opts = {}) {
-    if (!this.levelData) return;
-    DrawTools.drawOrganicBlockingBackground(
-      this.p,
-      layer,
-      this.mapTransform,
-      this.levelData.tiles,
-      opts
-    );
-  }
-
-  drawTerrainBlocking(layer, opts = {}) {
-    if (!this.levelData) return;
-    DrawTools.drawBlockingBackgroundTransformed(
-      this.p,
-      layer,
-      this.mapTransform,
-      this.levelData.tiles,
-      opts
-    );
-  }
-
-  drawCurrentsLayer(layer, opts = {}) {
-    if (!this.currentsLookup) return;
-    // convert Map → array (staticDrawingTools expects an iterable list)
-    const list = Array.from(this.currentsLookup.values());
-    DrawTools.drawCurrents(
-      this.p,
-      layer,
-      this.mapTransform,
-      list,
-      opts
-    );
-  }
-
-
 }
+
+Object.assign(BaseScene.prototype, SceneDrawingMixin);

@@ -39,13 +39,16 @@ export class Level1Scene extends BaseScene {
         r.use('chroma');
         r.drawScene(() => {
             if (this.recentlyLaunchedScene || this.recentlyChangedScene) {
-                this.drawTerrainBlocking(layers.worldLayer);
+
+                // this.drawTerrainBlocking(layers.worldLayer);
 
                 this.drawTerrainOrganic(layers.worldLayer, {
                     noiseScale: 3.5,
                     noiseAmp: 0.4,
                     cornerSmooth: 0.45
                 });
+
+                this.drawWorldBoundary(layers.worldLayer);
 
                 this.drawCurrentsLayer(layers.worldLayer);
             }

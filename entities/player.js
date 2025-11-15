@@ -1,12 +1,12 @@
 import { BaseEntity } from '../core/BaseEntity.js';
 
 const ROOT_RADIUS = 0.15;
-const STEM_SEG_LENGTH = 0.20;
+const STEM_SEG_LENGTH = 0.40;
 const FROND_SPREAD = 0.32;
-const FROND_HEIGHT = 0.28;
+const FROND_HEIGHT = 0.38;
 const SPRING_K = 1.2;
 const SPRING_DAMP = 0.99;
-const FROND_MASS = 1;
+const FROND_MASS = 12;
 const STEM_MASS = 4;
 const ROOT_MASS = 12;
 
@@ -130,7 +130,7 @@ export class Player extends BaseEntity {
         // const chroma = this.p.shared.chroma;
         // const pc = chroma.player;
         layer.stroke(this.p.shared.chroma.player);
-        layer.strokeWeight(4);
+        layer.strokeWeight(this.p.shared.settings.playerStrokeWeight * layer.width || 8);
 
         for (const indexes of this.frond_particle_indexes) {
             const sp = this.scene.worldToScreen(this.physicsParticles[indexes[0]].pos); // start
