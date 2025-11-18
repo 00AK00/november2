@@ -86,7 +86,7 @@ export function drawBlockingBackgroundTransformed(p, layer, mapTransform, tiles)
   }
 }
 
-export function drawCurrents(p, layer, mapTransform, currents, drawArrows = true) {
+export function drawCurrents(p, layer, mapTransform, currents, drawArrows = false) {
   if (!currents) return;
 
   const { tileSizePx } = mapTransform;
