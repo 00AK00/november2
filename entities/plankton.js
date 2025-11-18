@@ -37,6 +37,9 @@ export class Plankton extends BaseEntity {
         root.mass = BODY_MASS;
 
         this.art = p.createGraphics(64, 64);
+        this.art.pixelDensity(1);
+        this.art.noSmooth();
+        this.art.elt.getContext('2d').imageSmoothingEnabled = false;
         this.generateArt();
     }
 
@@ -138,7 +141,7 @@ export class Plankton extends BaseEntity {
             //crab 8 x 11
             //squid 8 x 8
             //octopus 8 x 12
-            let invLength = randomInRange(3, 5);
+            let invLength = randomInRange(2, 4);
             let invHeight = randomInRange(3, 5);
             layer.fill(scolor);
             layer.stroke(scolor);
@@ -192,7 +195,7 @@ export class Plankton extends BaseEntity {
         layer.image(this.art, x, y, dims, dims);
 
         texture.fill(this.color);
-        texture.circle(x, y, dims * 2);
+        texture.circle(x, y, dims);
 
         // layer.fill(this.p.shared.chroma.ambient);
         // layer.noStroke();

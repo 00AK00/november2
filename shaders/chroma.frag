@@ -254,8 +254,8 @@ void main() {
     // 7. Slight darkening toward plankton edges
     //    to preserve shape definition
     // ---------------------------------------------
-    // float edge = smoothstep(0.05, 0.20, sprite.a);
-    // col *= edge * 1.05;
+    float edge = smoothstep(0.05, 0.20, sprite.a);
+    col *= edge * 1.05;
 
     // ---------------------------------------------
     // 8. Edge soften into background (feather fade)
@@ -333,7 +333,8 @@ void main() {
     float n1 = fbm(p * 2.0);
     float n2 = fbm(p * 5.0 + vec2(3.1, 7.3));
     float n3 = fbm(p * 12.0 - vec2(5.4, 1.7));
-    float pebble = noise(p * 25.0) * 0.4 + noise(p * 60.0) * 0.2;
+    // float pebble = noise(p * 25.0) * 0.4 + noise(p * 60.0) * 0.2;
+    float pebble = noise(p * 25.0) * 0.2 + noise(p * 60.0) * 0.8;
 
     // Combined rock height map
     float height = n1 * 0.5 + n2 * 0.3 + n3 * 0.1 + pebble * 0.4;

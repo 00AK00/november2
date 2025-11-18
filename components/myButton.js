@@ -7,7 +7,7 @@ export class MyButton {
         this.designHeight = layer.height;
         this.label = label;
         this.onClick = onClick;
-        this.fontSize = Math.min((this.w/label.length), 32);
+        this.fontSize = Math.min((this.w / this.label.length) * 0.8, 64);
     }
 
     draw(layer) {

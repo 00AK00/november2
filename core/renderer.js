@@ -64,6 +64,9 @@ export async function createRenderer(p) {
         this.layers[layerName].textFont(p.shared.mainFont);
         this.layers[layerName].textAlign(p.CENTER, p.CENTER);
         this.layers[layerName].textSize(this.layers[layerName].width / 40);
+        this.layers[layerName].pixelDensity(1);
+        this.layers[layerName].noSmooth();
+        this.layers[layerName].elt.getContext('2d').imageSmoothingEnabled = false;
       });
 
       await this.loadShader('default', './shaders/default.vert', './shaders/default.frag');
@@ -141,9 +144,9 @@ export async function createRenderer(p) {
           layer.clear();
           layer.noStroke();
           // this.Debug.log('renderer', `🖌️ Redrawing layer: "${name}"`);
-          if (layer._renderer?.GL) {
-            layer.drawingContext.disable(layer.drawingContext.DEPTH_TEST);
-          }
+          // if (layer._renderer?.GL) {
+          //   layer.drawingContext.disable(layer.drawingContext.DEPTH_TEST);
+          // }
         }
 
         // Only apply deferred shaders after a few frames have passed since reset
@@ -165,17 +168,8 @@ export async function createRenderer(p) {
         this.layerDirty[name] = false;
       }
 
-      // this.Debug.log('renderer', `Compositing layers onto main canvas at frame ${this.frameCount} - ${p.frameCount}`);
       // Composite onto main canvas
-
-      // this.base.clear();
-      // const chroma = p.shared.chroma;
-      // const bg = chroma.background;
-      // this.base.background(bg[0], bg[1], bg[2], bg[3]);
       this.base.background(p.shared.chroma.background);
-
-      // p.clear();
-
       const scaleFactor = p.shared.settings.graphicsScaling;
       this.base.image(this.layers.backgroundLayer, -p.width / 2, -p.height / 2, p.width, p.height);
       this.base.image(this.layers.worldLayer, -p.width / 2, -p.height / 2, p.width, p.height);
