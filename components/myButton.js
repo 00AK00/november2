@@ -11,7 +11,7 @@ export class MyButton {
     }
 
     draw(layer) {
-        layer.fill(255);
+        layer.fill(255, 100, 100);
         layer.rectMode(layer.CORNER);
         layer.rect(this.x, this.y, this.w, this.h);
         layer.fill(0);
@@ -35,8 +35,8 @@ export class MyButton {
 
         this.fontSize = Math.min((this.w / this.label.length) * 0.8, 64);
 
-        console.log("Layer Size", layer.width, layer.height);
-        console.log('MyButton onResize to', this.x, this.y, this.w, this.h);
+        // console.log("Layer Size", layer.width, layer.height);
+        // console.log('MyButton onResize to', this.x, this.y, this.w, this.h);
     }
 
     contains(px, py) {
@@ -45,10 +45,10 @@ export class MyButton {
     }
 
     mousePressed(px, py) {
-        console.log('MyButton mousePressed at', px, py);
-        console.log('Button bounds:', this.x, this.x + this.w, this.y, this.y + this.h);
+        // console.log('MyButton mousePressed at', px, py);
+        // console.log('Button bounds:', this.x, this.x + this.w, this.y, this.y + this.h);
         if (this.contains(px, py) && this.onClick) {
-            console.log('MyButton clicked!');
+            // console.log('MyButton clicked!');
             this.onClick();
         }
     }

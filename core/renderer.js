@@ -46,7 +46,7 @@ export async function createRenderer(p) {
     activeShader: null,
     activePostShader: 'default',
     layerDirty: {},
-    layerNames: ['backgroundLayer', 'worldLayer', 'entitiesLayer', 'uiLayer', 'ambientTexture'],
+    layerNames: ['backgroundLayer', 'worldLayer', 'entitiesLayer', 'uiLayer', 'ambientTexture', 'currentTexture'],
     _pendingShaders: {},
     _shaderCache: new Map(),
     frameCount: 0,
@@ -55,11 +55,31 @@ export async function createRenderer(p) {
     base: null,
 
     async init() {
-      // Create all major drawing layers (no shader layers)
-      this.base = p.createGraphics(p.width, p.height, p.WEBGL);
+      console.log(p.width, p.height);
+      if (p.height < 640) {
+        p.shared.isPortrait = true;
+        p.shared.settings.graphicsScaling = 1;
+      }
+      // Create all major drawing layers
+      // base: 2D composite buffer
+      this.base = p.createGraphics(p.width, p.height);
       this.base.noStroke();
+      this.base.pixelDensity(1);
+      this.base.noSmooth();
+
+      // postBuffer: single WEBGL buffer for dual-pass shader pipeline
+      this.postBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+      this.postBuffer.noStroke();
+      this.postBuffer.textureWrap(this.postBuffer.CLAMP);
+
+      // Dual-pass shader names
+      this.textureShaderName = 'chroma';   // first pass
+      this.postShaderName = 'default';     // second pass (can be set to null to disable)
+
       this.layerNames.forEach(layerName => {
-        this.layers[layerName] = p.createGraphics(Math.floor(p.width / p.shared.settings.graphicsScaling), Math.floor(p.height / p.shared.settings.graphicsScaling));
+        this.Debug.log('renderer', `Creating layer: "${layerName}"`);
+        const scale = p.shared.settings.graphicsScaling;
+        this.layers[layerName] = p.createGraphics(Math.floor(p.width / scale), Math.floor(p.height / scale));
         this.layerDirty[layerName] = true;
         this.layers[layerName].textFont(p.shared.mainFont);
         this.layers[layerName].textAlign(p.CENTER, p.CENTER);
@@ -69,20 +89,10 @@ export async function createRenderer(p) {
         this.layers[layerName].elt.getContext('2d').imageSmoothingEnabled = false;
       });
 
-      await this.loadShader('default', './shaders/default.vert', './shaders/default.frag');
+      await this.loadShader('default', './shaders/testing_and_old/monet.vert', './shaders/testing_and_old/monet.frag');
+      // await this.loadShader('default', './shaders/post.vert', './shaders/post.frag');
       await this.loadShader('chroma', './shaders/chroma.vert', './shaders/chroma.frag');
 
-      // we could be stacking these as like the texture level shaders
-
-      // await this.loadShader('player', './shaders/player.vert', './shaders/player.frag');
-      // await this.loadShader('enemy', './shaders/enemy.vert', './shaders/enemy.frag');
-      // await this.loadShader('terrain', './shaders/terrain.vert', './shaders/terrain.frag');
-      // await this.loadShader('background', './shaders/background.vert', './shaders/background.frag');
-
-
-      // then there could be a final layer mastering one also - water color effect would be nice
-
-      // 2d sampler canvas for voroni tile source for coral variation in color etc
     },
 
     colorToVec4(c) {
@@ -94,45 +104,87 @@ export async function createRenderer(p) {
       ];
     },
 
-    applyPostShader(shaderName = 'default') {
-
-      if (p.shared.settings.enableShaders === false) {
-        shaderName = 'default';
-      }
-      const shader = this.shaders[shaderName];
-      if (!shader) {
-        this.Debug.log('renderer', '[WARN]', `⚠️ Post shader "${shaderName}" not found.`);
-        return;
-      }
-
-      p.shader(shader);
+    setCommonPostUniforms(shader, sourceTexture) {
       try {
-        shader.setUniform('tex0', this.base);
+        shader.setUniform('tex0', sourceTexture);
         shader.setUniform('ambientTexture', this.layers.ambientTexture);
+        shader.setUniform('currentTexture', this.layers.currentTexture);
         shader.setUniform('uResolution', [p.width, p.height]);
         shader.setUniform('uTime', p.millis() / 1000.0);
 
         const chroma = p.shared.chroma;
         shader.setUniform('uChromaPlayer', this.colorToVec4(chroma.player));
-        shader.setUniform('uChromaEnemy', this.colorToVec4(chroma.enemy));
-        shader.setUniform('uChromaAmbient', this.colorToVec4(chroma.ambient));
         shader.setUniform('uChromaTerrain', this.colorToVec4(chroma.terrain));
+        shader.setUniform('uChromaVegetation', this.colorToVec4(chroma.vegetation));
+        shader.setUniform('uChromaStaticVegetation', this.colorToVec4(chroma.static_vegetation));
+        shader.setUniform('uChromaCurrent', this.colorToVec4(chroma.current));
         shader.setUniform('uChromaBackground', this.colorToVec4(chroma.background));
-        // shader.setUniform('uChromaUI', this.colorToVec4(chroma.ui));
-        shader.setUniform('uChromaCurrents', this.colorToVec4(chroma.current));
-
+        shader.setUniform('uChromaAmbient', this.colorToVec4(chroma.ambient));
+        shader.setUniform('uChromaEnemy', this.colorToVec4(chroma.enemy));
+        
+        
+        
       } catch (err) {
-        console.error('Error setting shader uniforms:', err);
-        // Ignore errors if uniforms don't exist
+        console.error('Error setting post shader uniforms:', err);
+      }
+    },
+
+    runDualPass() {
+      const w = p.width;
+      const h = p.height;
+
+      // If shaders are disabled, just blit base to the screen
+      if (p.shared.settings.enableShaders === false) {
+        p.image(this.base, -w / 2, -h / 2, w, h);
+        return;
       }
 
+      // 1) First pass: base (2D) -> postBuffer (WEBGL) with textureShaderName
+      const texName = this.textureShaderName;
+      const textureShader = texName ? this.getOrCreateShader(texName, this.postBuffer) : null;
+
+      if (!textureShader) {
+        // Fallback: no shader, draw base directly
+        p.image(this.base, -w / 2, -h / 2, w, h);
+        return;
+      }
+
+      this.postBuffer.shader(textureShader);
+      this.setCommonPostUniforms(textureShader, this.base);
+
+      this.postBuffer.push();
+      this.postBuffer.resetMatrix();
+      this.postBuffer.noStroke();
+      this.postBuffer.rectMode(p.CORNER);
+      this.postBuffer.translate(-w / 2, -h / 2);
+      this.postBuffer.rect(0, 0, w, h);
+      this.postBuffer.pop();
+
+      // 2) Second pass: postBuffer -> screen with postShaderName (optional)
+      const postName = this.postShaderName;
+      if (!postName) {
+        // No post-processing shader: draw postBuffer to screen
+        p.image(this.postBuffer, -w / 2, -h / 2, w, h);
+        return;
+      }
+
+      const postShader = this.getOrCreateShader(postName, p);
+      if (!postShader) {
+        p.image(this.postBuffer, -w / 2, -h / 2, w, h);
+        return;
+      }
+
+      p.shader(postShader);
+      this.setCommonPostUniforms(postShader, this.postBuffer);
+
       p.push();
-      p.translate(-p.width / 2, -p.height / 2);
+      p.translate(-w / 2, -h / 2);
       p.rectMode(p.CORNER);
-      p.rect(0, 0, p.width, p.height);
+      p.noStroke();
+      p.rect(0, 0, w, h);
       p.pop();
 
-
+      p.resetShader();
     },
 
     drawScene(drawFn) {
@@ -168,19 +220,21 @@ export async function createRenderer(p) {
         this.layerDirty[name] = false;
       }
 
-      // Composite onto main canvas
+      // Composite onto base (2D)
       this.base.background(p.shared.chroma.background);
       const scaleFactor = p.shared.settings.graphicsScaling;
-      this.base.image(this.layers.backgroundLayer, -p.width / 2, -p.height / 2, p.width, p.height);
-      this.base.image(this.layers.worldLayer, -p.width / 2, -p.height / 2, p.width, p.height);
-      this.base.image(this.layers.entitiesLayer, -p.width / 2, -p.height / 2, p.width, p.height);
-      // this.base.image(this.layers.uiLayer, -p.width / 2, -p.height / 2, p.width, p.height);
+      this.base.image(this.layers.backgroundLayer, 0, 0, p.width, p.height);
+      this.base.image(this.layers.worldLayer, 0, 0, p.width, p.height);
+      this.base.image(this.layers.entitiesLayer, 0, 0, p.width, p.height);
 
-      // this was an early idea, I think need to rework for multiple shaders  the 'texture level' shaders and a final pass shader
-      // we might need to think on additional texture shaders required
-      this.applyPostShader(this.activePostShader);
-      p.resetShader();
+      // Run dual-pass shader pipeline to draw to the main canvas
+      this.runDualPass();
+
+      // UI on top
       p.image(this.layers.uiLayer, -p.width / 2, -p.height / 2, p.width, p.height);
+      // p.image(this.layers.currentTexture, -p.width / 2, -p.height / 2, p.width, p.height);
+      // p.image(this.layers.worldLayer, -p.width / 2, -p.height / 2, p.width, p.height);
+      
 
       // Check renderer readiness
       if (!this.ready && Object.keys(this._pendingShaders).length === 0) {
@@ -189,15 +243,17 @@ export async function createRenderer(p) {
       }
     },
 
+
     //// END OF FUN STUFF ////
 
     resize(w, h) {
       this.base.resizeCanvas(w, h);
+      if (this.postBuffer) {
+        this.postBuffer.resizeCanvas(w, h);
+      }
       const scaling = p.shared.settings.graphicsScaling
       Object.entries(this.layers).forEach(([name, layer]) => {
         layer.resizeCanvas(Math.floor(w / scaling), Math.floor(h / scaling));
-
-
         this.layerDirty[name] = true; // mark dirty after resize
         this.Debug.log('renderer', `🔄 Resized layer "${name}" to (${Math.floor(w / scaling)}, ${Math.floor(h / scaling)})`);
       });
@@ -212,15 +268,14 @@ export async function createRenderer(p) {
         }
         this.layerDirty[name] = true; // mark everything dirty for next draw
       }
+      if (this.postBuffer) {
+        this.postBuffer.clear();
+      }
       this.activeShader = this.shaders.default;
       // this.updateUniforms(p);
       this.frameCount = 0;
       this.Debug.log('renderer', '🔄 Renderer reset, frame counter cleared');
       this.Debug.log('renderer', 'Base Dims:', p.width, p.height, 'Layer Dims:', this.layers.entitiesLayer.width, this.layers.entitiesLayer.height);
-    },
-
-    use(shaderName = 'default') {
-      this.activePostShader = shaderName;
     },
 
     markDirty(layerName) {
@@ -274,7 +329,7 @@ export async function createRenderer(p) {
       // Compose a cache key unique per shader and WebGL context
       const cacheKey = `${shaderName}_${contextId}`;
       if (this._shaderCache.has(cacheKey)) {
-        this.Debug.log('renderer', `♻️ Reusing cached shader "${shaderName}" for context.`);
+        // this.Debug.log('renderer', `♻️ Reusing cached shader "${shaderName}" for context.`);
         return this._shaderCache.get(cacheKey);
       }
       try {
@@ -326,4 +381,3 @@ export async function createRenderer(p) {
   p.shared.renderer = renderer;
   return renderer;
 }
-

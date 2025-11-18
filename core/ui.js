@@ -7,10 +7,7 @@ export function createUI(p) {
 
     draw(layer) {
       if (!this.visible) return;
-
-      const chroma = p.shared.chroma;
-      const pc = chroma.ui;
-      layer.fill(255);
+      layer.fill(100, 100, 255);
       layer.textAlign(p.LEFT, p.TOP);
       layer.textSize(layer.width / 80);
 

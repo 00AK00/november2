@@ -28,7 +28,7 @@ export class GameOverScene extends BaseScene {
     draw() {
         const r = this.p.shared.renderer;
         const layers = r.layers;
-        r.use('chroma');
+        // r.use('chroma');
 
         r.drawScene(() => {
             // UI layer (text)

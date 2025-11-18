@@ -18,8 +18,6 @@ export class Level1Scene extends BaseScene {
         }
 
         this.addLevelButtons();
-        this.Debug.log('level', "🎮 Level 1 started");
-
     }
 
     onKeyPressed(key, keyCode) {
@@ -44,12 +42,14 @@ export class Level1Scene extends BaseScene {
         const ui = this.p.shared.ui;
         const player = this.p.shared.player;
         const layers = r.layers;
-        r.use('chroma');
+        
+        // r.use('chroma');
         r.drawScene(() => {
             if (this.recentlyLaunchedScene || this.recentlyChangedScene) {
                 // this.drawTerrainBlocking(layers.worldLayer);
-                this.drawCurrentsLayer(layers.worldLayer, { skipGenerated: true });
-                this.drawCurrentsLayer(layers.worldLayer, { skipGenerated: false });
+                this.drawCurrentsUniformTexture();
+                // this.drawCurrentsLayer(layers.worldLayer, { skipGenerated: true });
+                // this.drawCurrentsLayer(layers.worldLayer, { skipGenerated: false });
                 this.drawTerrainOrganic(layers.worldLayer, {
                     noiseScale: 3.5,
                     noiseAmp: 0.4,
@@ -62,6 +62,7 @@ export class Level1Scene extends BaseScene {
                 entity.draw(layers.entitiesLayer, layers.ambientTexture);
             }
             ui.draw(layers.uiLayer);
+            
             super.draw();
         });
 

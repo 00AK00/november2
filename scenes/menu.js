@@ -10,7 +10,6 @@ export class MenuScene extends BaseScene {
 
     init() {
         super.init();
-        this.Debug.log('level', "📜 Menu initialized");
         this.p.shared.ui.hide();
         const r = this.renderer;
         const player = this.p.shared.player;
@@ -130,7 +129,7 @@ export class MenuScene extends BaseScene {
     draw() {
         const r = this.renderer;
         const layers = r.layers;
-        r.use('chroma');
+        // r.use('chroma');
 
         r.drawScene(() => {
             super.draw();

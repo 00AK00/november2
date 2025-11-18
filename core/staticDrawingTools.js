@@ -124,7 +124,7 @@ export function drawOrganicBlockingBackground(p, layer, mapTransform, tiles, opt
   }
 }
 
-export function drawCurrents(p, layer, mapTransform, currents, drawArrows = false) {
+export function drawCurrents(p, layer, mapTransform, currents, drawArrows = true) {
   if (!currents) return;
 
   const { tileSizePx } = mapTransform;
@@ -148,7 +148,7 @@ export function drawCurrents(p, layer, mapTransform, currents, drawArrows = fals
       const ax = dx * (tileSizePx * 0.01);
       const ay = dy * (tileSizePx * 0.01);
 
-      layer.stroke(0);
+      layer.stroke(p.shared.chroma.player);
       layer.strokeWeight(1);
       layer.line(cx, cy, cx + ax, cy + ay);
 

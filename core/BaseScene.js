@@ -43,6 +43,7 @@ export class BaseScene {
       this.computeMapTransform(this.levelData, { paddingPx: this.padding });
       player.setScene(this);
       this.levelData = generateCurrents(this.levelData, this.p);
+      this.drawCurrentsUniformTexture();
       const spawnWorld = {
         x: this.levelData.spawn.x + 0.5,
         y: this.levelData.spawn.y + 0.5
@@ -62,9 +63,29 @@ export class BaseScene {
     const r = this.p.shared.renderer;
     r.reset();
     this.registerEntity(player);
-    console.log('reset renderer layers width:');
-    console.log(this.renderer.layers.uiLayer.width);
     return [r, player];
+  }
+
+  drawCurrentsUniformTexture() {
+    const layer = this.renderer.layers.currentTexture;
+    const minDX = this.levelData.currentExtrema.minDX;
+    const maxDX = this.levelData.currentExtrema.maxDX;
+    const minDY = this.levelData.currentExtrema.minDY;
+    const maxDY = this.levelData.currentExtrema.maxDY;
+    // console.log(minDX, maxDX, minDY, maxDY);
+    // step thought this.levelData.currents and draw to layer
+    for (const c of this.levelData.currents) {
+      if (c.levelDefinitionCurrent) {
+        const screenPos = this.worldToScreen({ x: c.x, y: c.y });
+        const tileSize = this.mapTransform.tileSizePx;
+        const r = Math.floor(this.p.map(c.dx, minDX, maxDX, 0, 255));
+        const g = Math.floor(this.p.map(c.dy, minDY, maxDY, 0, 255));
+        const b = 128; // neutral
+        layer.noStroke();
+        layer.fill(r, g, b);
+        layer.rect(screenPos.x, screenPos.y, tileSize, tileSize);
+      }
+    }
   }
 
   addLevelButtons() {
@@ -81,7 +102,6 @@ export class BaseScene {
         this.p.shared.sceneManager.change("menu");
       }
     );
-    console.log('Registering pause button UI element:', btn);
 
     this.registerUI(btn);
 

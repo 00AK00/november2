@@ -15,11 +15,11 @@ export class Plankton extends BaseEntity {
         this.baseBuoyancy = p.shared.settings.ambientBuoyancy;
         this.restlessness = p.random() * 6 + 1;
         const reefColors = [
-            p.color(255, 80, 140),   // coral pink
-            p.color(20, 210, 200),   // turquoise reef
-            p.color(180, 255, 110),   // lime-yellow biolume
-            p.color(220, 90, 255),   // violet sea sponge
-            // p.color(255, 165, 40)    // orange anthias
+            p.color('#FF40D9'),   // coral pink
+            p.color('#14D2C8'),   // turquoise reef
+            p.color('#B4FF6E'),   // lime-yellow biolume
+            p.color('#DC5AFF'),   // violet sea sponge
+            p.color('#FFA52D')    // orange anthias
         ];
         this.color = p.random(reefColors);
 
@@ -79,6 +79,14 @@ export class Plankton extends BaseEntity {
         }
 
         console.warn("⚠️ Plankton could not find valid spawn after many tries");
+    }
+
+    cleanup() {
+        super.cleanup();
+        if (this.art) {
+            this.art.remove();
+            this.art = null;
+        }
     }
 
     onActionStart(action) {

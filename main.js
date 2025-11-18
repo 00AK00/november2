@@ -44,6 +44,7 @@ export const mainSketch = (p) => {
       p.shared.chroma[k] = p.color(hue, saturation, level);
       hue += colorAngle;
     }
+    p.colorMode(p.RGB, 255);
 
     setupCanvasWithAdaptation(p);
 
