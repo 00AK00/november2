@@ -78,32 +78,6 @@ export class StarFishAndCoral extends BaseEntity {
         this.visible = this.positions.length > 0;
     }
 
-    // initAmbientGeneratedEntity() {
-    //     if (!this.scene || !this.scene.levelData) return;
-
-    //     const { cols, rows } = this.scene.levelData;
-
-    //     let tries = 0;
-    //     const maxTries = 200;
-    //     this.generateArt();
-    //     this.pxSize = this.size * this.scene.mapTransform.tileSizePx;
-
-    //     while (tries++ < maxTries && this.positions.length < 5) {
-    //         const x = Math.floor(Math.random() * (cols + 2)) - 1;
-    //         const y = Math.floor(Math.random() * (rows + 2)) - 1;
-
-    //         const tile = this.scene.getTile(x, y);
-
-    //         // grow on rocks etc
-    //         if (tile && tile.solid) {
-    //             this.visible = true;
-    //             this.positions.push({ x: x + Math.random(), y: y + Math.random(), size:  0.5 + Math.random() * 0.5});
-    //             // return;
-    //         }
-    //     }
-
-    //     console.warn("⚠️ Plankton could not find valid spawn after many tries");
-    // }
 
     cleanup() {
         super.cleanup();

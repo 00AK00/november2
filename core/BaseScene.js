@@ -7,6 +7,7 @@ import { MyButton } from '../components/myButton.js';
 
 import { Grass } from '../entities/grass.js';
 import { Friend } from '../entities/friend.js';
+import { Spikes } from '../entities/spikes.js';
 
 export class BaseScene {
   constructor(p, opts = {}) {
@@ -25,6 +26,7 @@ export class BaseScene {
     this.physicsSolver = null;
     this.nextScene = opts.nextScene || null;
     this.levelGoal = {};
+    this.useTextureLayer = 1.0;
   }
 
   init() {
@@ -73,7 +75,6 @@ export class BaseScene {
       }
 
       for (const entity of this.levelData.entities) {
-        console.log(entity);
         switch (entity.type) {
           case 'grass':
             const grass = new Grass(this.p, entity);
@@ -82,6 +83,18 @@ export class BaseScene {
           // add more entity types here
         }
       }
+
+      for (const hazard of this.levelData.hazards) {
+        console.log(hazard);
+        switch (hazard.type) {
+          case 'spike':
+            const spike = new Spikes(this.p, hazard);
+            spike.init(this);
+            this.registerEntity(spike);
+            break;
+        }
+      }
+
     }
     const r = this.p.shared.renderer;
     r.reset();
@@ -92,7 +105,7 @@ export class BaseScene {
   drawCurrentsUniformTexture() {
     const targetLayer = this.renderer.layers.currentTexture;
     const downscale = 0.02;
-    const layer = this.p.createGraphics(Math.round(targetLayer.width*downscale), Math.round(targetLayer.height*downscale));
+    const layer = this.p.createGraphics(Math.round(targetLayer.width * downscale), Math.round(targetLayer.height * downscale));
     const minDX = this.levelData.currentExtrema.minDX;
     const maxDX = this.levelData.currentExtrema.maxDX;
     const minDY = this.levelData.currentExtrema.minDY;
@@ -108,7 +121,7 @@ export class BaseScene {
         const b = 128; // neutral
         layer.noStroke();
         layer.fill(r, g, b);
-        layer.circle(screenPos.x*downscale, screenPos.y*downscale, tileSize*downscale*.8);
+        layer.circle(screenPos.x * downscale, screenPos.y * downscale, tileSize * downscale * .8);
       }
     }
     targetLayer.imageMode(this.p.CORNER);
@@ -137,6 +150,24 @@ export class BaseScene {
 
   }
 
+  positionChecking(player) {
+    if (player.worldPos.x - this.levelGoal.x < 1.0 && player.worldPos.x - this.levelGoal.x > -1.0 &&
+      player.worldPos.y - this.levelGoal.y < 1.0 && player.worldPos.y - this.levelGoal.y > -1.0) {
+      console.log('Level complete!');
+      if (this.nextScene) {
+        this.p.shared.sceneManager.change(this.nextScene);
+      }
+    }
+    for (const entity of this.entities) {
+      if (!entity.hazard) continue;
+
+      if (entity.checkCollisionWithPlayer?.(player)) {
+        console.warn('⚠️ Player hit hazard:', entity);
+        player.onHazard?.(entity);
+      }
+    }
+  }
+
   update() {
     const r = this.p.shared.renderer;
     const player = this.p.shared.player;
@@ -146,17 +177,7 @@ export class BaseScene {
 
     this.recentlyChangedScene = (this.sceneFrameCount - this.lastSceneChangeFrameNumber) < 5;
 
-    // console.log(player.worldPos.x, player.worldPos.y);
-    // this.levelGoal
-
-    if (player.worldPos.x - this.levelGoal.x < 1.0 && player.worldPos.x - this.levelGoal.x > -1.0 &&
-        player.worldPos.y - this.levelGoal.y < 1.0 && player.worldPos.y - this.levelGoal.y > -1.0) {
-      console.log('Level complete!');
-      if (this.nextScene) {
-        this.p.shared.sceneManager.change(this.nextScene);
-      }
-
-    }
+    this.positionChecking(player);
 
     // 1. apply entity forces
     for (const entity of this.entities) {

@@ -17,7 +17,7 @@ uniform vec4 uChromaBackground;
 uniform vec4 uChromaAmbient;
 uniform vec4 uChromaEnemy;
 
-bool exitEarly = false;
+uniform int skipTexture;
 
 varying vec2 vTexCoord;
 
@@ -467,6 +467,34 @@ vec4 renderTerrain(vec2 uv) {
   // Apply ambient occlusion
   rockColor *= (0.70 + ao * 0.35);
 
+  // ---- Grey Pebbles Layer ----
+  float pebbleN = noise(p * 55.0) * 0.4 + noise(p * 120.0) * 0.6;
+  float pebbleMask = smoothstep(0.55, 0.8, pebbleN);
+  vec3 greyA = vec3(0.45, 0.45, 0.50);
+  vec3 greyB = vec3(0.75, 0.75, 0.82);
+  vec3 greyPebble = mix(greyA, greyB, noise(p * 22.0));
+  greyPebble *= 0.8 + height * 0.2;                     
+  rockColor = mix(rockColor, greyPebble, pebbleMask);
+
+  // ---- Moss Layer ----
+  float mossFibers = fbm(p * vec2(6.0, 25.0) + vec2(0.0, 0.2));
+  float mossMask = smoothstep(0.45, 0.70, mossFibers);
+  mossMask *= (ao * 0.8 + 0.2);    
+  mossMask *= (wet * 1.2);         
+  vec3 mossA = vec3(0.10, 0.75, 0.15);
+  vec3 mossB = vec3(0.18, 0.80, 0.22);
+  vec3 mossColor = mix(mossA, mossB, noise(p * 8.0));
+  rockColor = mix(rockColor, mossColor, mossMask * 3.0);
+
+  // ---- Directional Strata Layer ----
+  float strata = sin(p.y * 20.0 + noise(p * 4.0) * 1.5);
+  float strataMask = smoothstep(-0.2, 0.4, strata);
+  vec3 strataColor = mix(vec3(0.45, 0.42, 0.35),
+                         vec3(0.60, 0.55, 0.48),
+                         noise(p * 3.0));
+  float strataAmount = strataMask * (0.2 + ao * 0.4);
+  rockColor = mix(rockColor, strataColor, strataAmount);
+
   return vec4(rockColor, 1.0);
 }
 
@@ -477,7 +505,7 @@ void main() {
   vec2 uv = vTexCoord;
   vec4 maskColor = texture2D(tex0, uv);
 
-  if (exitEarly) {
+  if (skipTexture == 1) {
     gl_FragColor = maskColor;
     return;
   }

@@ -63,19 +63,19 @@ function applyCanvasStyles(canvasElt, { screenW, screenH, portrait }) {
   s.padding = '0';
   s.display = 'block';
 
-  if (portrait) {
-    s.transform = 'rotate(90deg)';
-    s.transformOrigin = 'top left';
-    s.width = `${screenH}px`; // swapped visually
-    s.height = `${screenW}px`;
-    s.translate = `${screenW}px 0`;
-  } else {
-    s.transform = '';
-    s.transformOrigin = '';
-    s.width = `${screenW}px`;
-    s.height = `${screenH}px`;
-    s.translate = '0';
-  }
+  // if (portrait) {
+  //   s.transform = 'rotate(90deg)';
+  //   s.transformOrigin = 'top left';
+  //   s.width = `${screenH}px`; // swapped visually
+  //   s.height = `${screenW}px`;
+  //   s.translate = `${screenW}px 0`;
+  // } else {
+  //   s.transform = '';
+  //   s.transformOrigin = '';
+  //   s.width = `${screenW}px`;
+  //   s.height = `${screenH}px`;
+  //   s.translate = '0';
+  // }
 }
 
 export function setupCanvasWithAdaptation(p) {

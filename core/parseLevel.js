@@ -1,6 +1,6 @@
 // core/parseLevel.js
 export function parseLevel(levelData, p) {
-  const { layers, tileSize, currentsLegend, entityLegend } = levelData;
+  const { layers, tileSize, currentsLegend, entityLegend, hazardLegend} = levelData;
   const result = {
     tiles: [],
     currents: [],
@@ -45,7 +45,10 @@ export function parseLevel(levelData, p) {
   for (let y = 0; y < layers.hazards.length; y++) {
     for (let x = 0; x < layers.hazards[y].length; x++) {
       const ch = layers.hazards[y][x];
-      if (ch === '#') result.hazards.push(toWorld(x, y));
+      if (hazardLegend[ch]) {
+        const pos = toWorld(x, y);
+        result.hazards.push({ ...pos, ...hazardLegend[ch] });
+      }
     }
   }
 

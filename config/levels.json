@@ -225,7 +225,7 @@
     "hazardLegend": {
     }
   },
-  "level4": {
+  "testLevel": {
     "name": "Test",
     "layers": {
       "layout": [
@@ -259,9 +259,9 @@
       "hazards": [
         ".....................",
         ".....................",
-        ".....................",
-        ".....................",
-        ".....................",
+        "...UUUUUUUUUUUUUUU...",
+        "..L...............R..",
+        "...SSSSSSSSSSSSSSS...",
         ".....................",
         ".....................",
         ".....................",
@@ -290,6 +290,10 @@
     "entityLegend": {
     },
     "hazardLegend": {
+      "S": {"type": "spike", "direction": "down" },
+      "L": {"type": "spike", "direction": "left" },
+      "R": {"type": "spike", "direction": "right" },
+      "U": {"type": "spike", "direction": "up" }
     }
   }
 }

@@ -5,10 +5,10 @@ const STEM_SEG_LENGTH = 0.40;
 const FROND_SPREAD = 0.32;
 const FROND_HEIGHT = 0.38;
 
-const SPRING_K = 1.2;
-const SPRING_DAMP = 0.99;
+const SPRING_K = 2.0;
+const SPRING_DAMP = 1.0;
 
-const FROND_MASS = 1;
+const FROND_MASS = 10;
 const STEM_MASS = 4;
 const ROOT_MASS = 12;
 
@@ -59,6 +59,7 @@ export class Friend extends BaseEntity {
         stem1.springDamping = SPRING_DAMP;
         stem1.mass = STEM_MASS;
         stem1.updateRadii(ROOT_RADIUS, this.size);
+        // stem1.springRestoringForce = true;
 
         const stem2 = stem1.createChild(0, -STEM_SEG_LENGTH, STEM_SEG_LENGTH);
         stem2.springK = SPRING_K;

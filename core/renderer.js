@@ -112,6 +112,7 @@ export async function createRenderer(p) {
         shader.setUniform('currentTexture', this.layers.currentTexture);
         shader.setUniform('uResolution', [p.width, p.height]);
         shader.setUniform('uTime', p.millis() / 1000.0);
+        shader.setUniform('skipTexture', 0);
 
         const chroma = p.shared.chroma;
         shader.setUniform('uChromaPlayer', this.colorToVec4(chroma.player));
