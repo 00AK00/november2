@@ -120,8 +120,16 @@ export class Friend extends BaseEntity {
         // } else {
         //     this.baseBuoyancy = this.buoyancy;
         // }
-        super.applyForces(dt);
+        const idleYOsc = this.p.shared.timing.getOsc(0, 5, 1000);
+        const idleXOsc = this.p.shared.timing.getOsc(0, 5, 1200);
         const mp = this.mainPhysicsParticle;
+        // mp.addForce(0, idleYOsc);
+        for (const c of mp.children) {
+            c.cascadeForce(idleXOsc, idleYOsc, 1.0);
+        }
+
+        super.applyForces(dt);
+        
         if (!mp) return;
 
     }

@@ -20,7 +20,7 @@ export function createTiming(p) {
 
     getOsc(bias, amplitude, period) {
       const time = p.millis();
-      const osc = bias + amplitude * 0.5 * (1 + Math.sin((2 * Math.PI * time) / period));
+      const osc = bias + amplitude * ( Math.sin((2 * Math.PI * time) / period));
       return osc;
     },
 

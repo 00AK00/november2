@@ -31,7 +31,7 @@ export class StarFishAndCoral extends BaseEntity {
         if (!p.shared.assets.ambientShapes) p.shared.assets.ambientShapes = {};
 
         let cached = p.shared.assets.ambientShapes[this.shapeType];
-        console.log(p.shared.assets, cached);
+        // console.log(p.shared.assets, cached);
         if (!cached) {
             const g = p.createGraphics(64, 64);
             g.pixelDensity(1);
