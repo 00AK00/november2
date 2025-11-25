@@ -6,8 +6,8 @@ export const Debug = {
   flags: {
     controls: false,
     renderer: true,
-    system: true,
-    player: false,
+    system: false,
+    player: true,
     level: true,
   },
 

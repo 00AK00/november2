@@ -7,6 +7,7 @@ export class ChapterScene extends BaseScene {
         super(p);
         this.title = null;
         this.levelLabels = opts.levels;
+        console.log('chapter levels', this.levelLabels);
     }
 
     init() {
@@ -57,7 +58,7 @@ export class ChapterScene extends BaseScene {
                 this.renderer.layers.uiLayer,
                 () => {
                     // selectable action — replace as needed
-                    this.p.shared.sceneManager.change("level" + (i + 1));
+                    this.p.shared.sceneManager.change("level" + (level));
                 }
             );
 

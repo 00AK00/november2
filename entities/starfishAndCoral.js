@@ -98,9 +98,9 @@ export class StarFishAndCoral extends BaseEntity {
 
     cleanup() {
         super.cleanup();
-        if (this.shapeTexture && this.shapeTexture !== this.p.shared.assets.ambientShapes[this.shapeType]) {
-            this.shapeTexture.remove();
-        }
+        // if (this.shapeTexture && this.shapeTexture !== this.p.shared.assets.ambientShapes[this.shapeType]) {
+        //     this.shapeTexture.remove();
+        // }
         this.shapeTexture = null;
         if (this.colorTexture) {
             this.colorTexture.remove();

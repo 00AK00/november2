@@ -18,6 +18,7 @@ export class Player extends BaseEntity {
 
         this.size = 1.0;
         this.ambientCurrentScale = 0.5;
+        this.health = 100;
 
         this.speed = 40;
         this.speed = p.shared.settings.playerSpeed || 40;
@@ -101,6 +102,16 @@ export class Player extends BaseEntity {
     reset(spawn = { x: 0, y: 0 }) {
         super.reset(spawn);
         this.ready = false;
+        this.health = 100;
+    }
+
+    onHazard(hazard) {
+        this.health = 0;
+        // this.Debug?.log('player', `Player hit hazard at (${hazard.worldPos.x}, ${hazard.worldPos.y}), health now ${this.health}`);
+        for (const action in this.moving) {
+            this.moving[action] = false;
+        }
+        // this.Debug?.log('player', `Player hit hazard at (${hazard.worldPos.x}, ${hazard.worldPos.y})`);
     }
 
     cleanup() {
@@ -108,6 +119,7 @@ export class Player extends BaseEntity {
     }
 
     onCurrent(particle, current) {
+        if (this.health <= 0) return;
         if (current.levelDefinitionCurrent) {
             // this.p.shared.timing.getOsc(0.5, 0.5, 1000) 
             particle.addForce(current.dx, current.dy);
@@ -117,6 +129,7 @@ export class Player extends BaseEntity {
     }
 
     onActionStart(action) {
+        if (this.health <= 0) return;
         if (this.moving[action] !== undefined) {
             this.moving[action] = true;
             this.ready = true;
@@ -131,7 +144,8 @@ export class Player extends BaseEntity {
 
     applyForces(dt) {
         if (!this.ready) return;
-        
+        if (this.health <= 0) return;
+
         if (this.moving.sink) {
             this.baseBuoyancy = this.sinkancy;
         } else {
@@ -151,6 +165,7 @@ export class Player extends BaseEntity {
     }
 
     postPhysics() {
+        if (this.health <= 0) return;
         const mp = this.mainPhysicsParticle;
         if (!mp) return;
 

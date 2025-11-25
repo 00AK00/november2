@@ -13,7 +13,7 @@ export class Spikes extends BaseEntity {
         this.direction = config.direction || "up";
 
         // tile-relative size (slightly smaller than full tile)
-        this.size = 0.8;
+        this.size = 1.0;
         this.pxSize = 1; // will be updated in init
 
         // position in world units (tile center)
@@ -32,19 +32,53 @@ export class Spikes extends BaseEntity {
             g.elt.getContext("2d").imageSmoothingEnabled = false;
 
             g.clear();
-            g.push();
-            g.translate(32, 32);
             g.noStroke();
-            g.fill(p.shared.chroma.enemy); // bright, readable in debug
+            g.fill(p.shared.chroma.enemy);
 
-            // base spike shape pointing "up" - rotation handled in draw()
+            // Base spike shape in absolute canvas coordinates
             g.beginShape();
-            g.vertex(-22, 20);
-            g.vertex(22, 20);
-            g.vertex(0, -20);
-            g.endShape(p.CLOSE);
 
-            g.pop();
+            // wider base (centered horizontally)
+            g.vertex(8, 60);     // x=32-24
+            g.vertex(12, 64);     // x=32-24
+            g.vertex(52, 64);    // x=32+24
+            g.vertex(56, 60);    // x=32+24
+
+            // right barbs
+            g.vertex(48, 42);
+            g.vertex(40, 44);
+            g.vertex(36, 36);
+
+            // primary tip (center top)
+            g.vertex(32, 8);
+
+            // left barbs
+            g.vertex(28, 36);
+            g.vertex(24, 44);
+            g.vertex(16, 42);
+
+            g.endShape(p.CLOSE);
+            g.fill(p.shared.chroma.terrain);
+
+            g.beginShape();
+
+            // wider base (centered horizontally)
+            g.vertex(8, 54);     // x=32-24
+            g.vertex(24, 64);     // x=32-24
+            g.vertex(32, 48);     // x=32-24
+            g.vertex(56, 54);    // x=32+24
+
+            // right barbs
+            g.vertex(48, 42);
+            g.vertex(40, 44);
+            g.vertex(36, 36);
+
+            // left barbs
+            g.vertex(28, 36);
+            g.vertex(24, 44);
+            g.vertex(16, 42);
+
+            g.endShape(p.CLOSE);
 
             p.shared.assets.spikeTexture = g;
         }
@@ -55,10 +89,10 @@ export class Spikes extends BaseEntity {
 
     cleanup() {
         super.cleanup();
-        if (this.g) {
-            this.g.remove();
-            this.g = null;
-        }
+        // if (this.g) {
+        //     this.g.remove();
+        //     this.g = null;
+        // }
     }
 
     init(scene) {

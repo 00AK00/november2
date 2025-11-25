@@ -77,15 +77,17 @@ export class BaseScene {
       for (const entity of this.levelData.entities) {
         switch (entity.type) {
           case 'grass':
-            const grass = new Grass(this.p, entity);
-            this.registerEntity(grass);
+            for (let i = 0; i < (entity.count || 1); i++) {
+              const grass = new Grass(this.p, entity);
+              this.registerEntity(grass);
+            }
             break;
           // add more entity types here
         }
       }
 
       for (const hazard of this.levelData.hazards) {
-        console.log(hazard);
+        // this.Debug.log('level', hazard);
         switch (hazard.type) {
           case 'spike':
             const spike = new Spikes(this.p, hazard);
@@ -110,7 +112,7 @@ export class BaseScene {
     const maxDX = this.levelData.currentExtrema.maxDX;
     const minDY = this.levelData.currentExtrema.minDY;
     const maxDY = this.levelData.currentExtrema.maxDY;
-    // console.log(minDX, maxDX, minDY, maxDY);
+    // this.Debug.log('level', minDX, maxDX, minDY, maxDY);
     // step thought this.levelData.currents and draw to layer
     for (const c of this.levelData.currents) {
       if (c.levelDefinitionCurrent) {
@@ -153,16 +155,19 @@ export class BaseScene {
   positionChecking(player) {
     if (player.worldPos.x - this.levelGoal.x < 1.0 && player.worldPos.x - this.levelGoal.x > -1.0 &&
       player.worldPos.y - this.levelGoal.y < 1.0 && player.worldPos.y - this.levelGoal.y > -1.0) {
-      console.log('Level complete!');
+      this.Debug.log('level', 'Level complete!');
       if (this.nextScene) {
         this.p.shared.sceneManager.change(this.nextScene);
+      } else {
+        this.Debug.log('level', 'No next scene defined.');
       }
+      this.Debug.log('level', 'No next scene defined.');
     }
     for (const entity of this.entities) {
       if (!entity.hazard) continue;
 
       if (entity.checkCollisionWithPlayer?.(player)) {
-        console.warn('⚠️ Player hit hazard:', entity);
+        // console.warn('⚠️ Player hit hazard:', entity);
         player.onHazard?.(entity);
       }
     }
@@ -291,7 +296,7 @@ export class BaseScene {
     // above was an attempt at converting to internal coords, fails on portrait, also think it shouldnt live here - should live in renderer
     let [internalX, internalY] = this.renderer.toLayerCoords('uiLayer', x, y);
 
-    console.log('BaseScene onMousePressed at:', x, y, '-> internal:', internalX, internalY);
+    this.Debug.log('level', 'BaseScene onMousePressed at:', x, y, '-> internal:', internalX, internalY);
     for (const el of this.uiElements) {
       if (el.mousePressed?.(internalX, internalY)) return;   // allow UI to consume the click
     }
@@ -303,7 +308,7 @@ export class BaseScene {
       const uiLayer = this.renderer.layers.uiLayer;
       for (const el of this.uiElements) {
         el.draw(uiLayer);
-        // console.log('Drawing UI element:', el);
+        // this.Debug.log('level', 'Drawing UI element:', el);
       }
     }
   }
@@ -316,6 +321,7 @@ export class BaseScene {
     this.lastSceneChangeFrameNumber = 0;
     for (const entity of this.entities) {
       entity.cleanup();
+      this.Debug.log('level', 'Cleaned up entity:', entity);
     }
     this.entities.length = 0;
     this.uiElements.length = 0;
@@ -324,6 +330,7 @@ export class BaseScene {
     this.physicsWorld = null;
     this.physicsSolver = null;
     this.levelData = null;
+    this.Debug.log('level', `🧹 ${this.constructor.name} cleanup - done`);
   }
 
   // ---- Helpers -------------------------------------------------
