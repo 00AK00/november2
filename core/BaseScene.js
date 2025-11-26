@@ -159,6 +159,10 @@ export class BaseScene {
 
   }
 
+  sortEntitiesToRenderOrder() {
+
+  }
+
   positionChecking(player) {
     if (player.worldPos.x - this.levelGoal.x < 1.0 && player.worldPos.x - this.levelGoal.x > -1.0 &&
       player.worldPos.y - this.levelGoal.y < 1.0 && player.worldPos.y - this.levelGoal.y > -1.0) {
@@ -439,7 +443,7 @@ export class BaseScene {
     const H = p.height;
     const scale = this.p.shared.settings?.paddingRatio ?? 1;
 
-    const paddingPx = Math.floor(Math.min(W, H) * scale);
+    const paddingPx = 20 + Math.floor(Math.min(W, H) * scale);
     // const paddingPx = H * scale;
 
     this.Debug.log('level', `Calculated padding: ${paddingPx}px (scale: ${scale})`);

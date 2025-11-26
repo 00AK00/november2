@@ -27,7 +27,11 @@ function distortOutlineWithPerlin(p, outline, opts = {}) {
       const px = a.x + dx * t;
       const py = a.y + dy * t;
 
-      const n = p.noise(px * noiseFreq, py * noiseFreq);
+      // --- Unified noise domain (tile-coordinate UVs) ---
+      const worldUx = px;   // tile-space coordinate, consistent across all outlines
+      const worldUy = py;
+
+      const n = p.noise(worldUx * noiseFreq, worldUy * noiseFreq);
       const offset = (n - 0.5) * 2 * jitter;
 
       out.push({
@@ -101,7 +105,7 @@ export function drawOrganicBlockingBackground(p, layer, mapTransform, tiles, opt
     return;
   }
 
-  const { tileSizePx, originPx } = mapTransform;
+  const { tileSizePx, originPx, cols, rows } = mapTransform;
 
   layer.noStroke();
   layer.fill(p.shared.chroma.terrain);
@@ -112,7 +116,22 @@ export function drawOrganicBlockingBackground(p, layer, mapTransform, tiles, opt
     const outline = GeometryTools.computeRegionOutline(region);
     if (outline.length === 0) continue;
 
-    const distorted = distortOutlineWithPerlin(p, outline, opts);
+    // --- Directionally bias outline outward if it touches world edges ---
+    const pad = 0.8; // tile units
+
+    const padded = outline.map(pt => {
+      let x = pt.x;
+      let y = pt.y;
+
+      if (x <= 0)      x -= pad;
+      if (x >= cols)   x += pad;
+      if (y <= 0)      y -= pad;
+      if (y >= rows)   y += pad;
+
+      return { x, y };
+    });
+
+    const distorted = distortOutlineWithPerlin(p, padded, opts);
 
     layer.beginShape();
     for (const pt of distorted) {
