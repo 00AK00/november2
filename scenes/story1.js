@@ -31,12 +31,15 @@ export class ArtSceneOne extends BaseScene {
     }
 
     init() {
+        
         super.init();
         this.p.shared.ui.hide();
         const r = this.renderer;
         const player = this.p.shared.player;
         player.deactivate();
         r.reset();
+        this.startFrame = this.p.frameCount;
+        this.counter = 0;
         const Lcount = 3;
         this.lightningInstances = Array.from({ length: Lcount }, (_, i) => {
             const baseX = ((i + 0.5) / Lcount) * this.p.width;
@@ -95,8 +98,8 @@ export class ArtSceneOne extends BaseScene {
         const layers = r.layers;
         const entitiesLayer = layers.entitiesLayer;
         const textureLayer = layers.ambientTexture;
-        const cycle = Math.floor(this.p.frameCount / 30);
-        this.counter = cycle;
+        const localFrame = this.p.frameCount - this.startFrame;
+        this.counter = Math.floor(localFrame / 30);
         r.drawScene(() => {
             super.draw();
             if (this.counter < 3) {
@@ -106,7 +109,7 @@ export class ArtSceneOne extends BaseScene {
             } else if (this.counter < 10) {
                 this.sceneThree(entitiesLayer, textureLayer);
             } else {
-                this.p.shared.sceneManager.change('level1');
+                this.p.shared.sceneManager.change('level1level');
             }
         });
     }

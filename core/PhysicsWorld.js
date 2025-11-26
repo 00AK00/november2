@@ -27,6 +27,8 @@ export class PhysicsWorld {
             );
         }
 
+        if (particle.collider == false) return;
+
         const r = particle.worldUnitRadius;
         const { x, y } = particle.pos;
 
@@ -79,6 +81,8 @@ export class PhysicsWorld {
                 'pos:', p.pos.x.toFixed(3), p.pos.y.toFixed(3)
             );
         }
+
+        if (p.collider == false) return;
 
         const tileCenterX = tileX + 0.5;
         const tileCenterY = tileY + 0.5;

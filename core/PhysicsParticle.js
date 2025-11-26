@@ -10,6 +10,7 @@ export class PhysicsParticle {
         this.invMass = fixed ? 0 : 1 / mass;
         this.fixed = fixed;
         this.main = main;
+        this.collider = true;
 
         this.children = [];
         this.offsets = { x: 0, y: 0 };
@@ -197,18 +198,21 @@ export class PhysicsParticle {
         const targetX = this.pos.x + child.offsets.x;
         const targetY = this.pos.y + child.offsets.y;
 
-        const dx = targetX - child.pos.x;
-        const dy = targetY - child.pos.y;
+        let dx = targetX - child.pos.x;
+        let dy = targetY - child.pos.y;
+
+        // dx = Math.min(0.2, dx);
+        // dy = Math.min(0.2, dy);
 
         const dist = Math.sqrt(dx * dx + dy * dy) || 0.000001;
         const rest = child.restLength;
 
         // HARD constraint if child strays too far from its intended anchor
-        const hardLimit = 3.0;
+        const hardLimit = 2.0;
         if (dist > rest * hardLimit) {
             const overshoot = dist - rest;
             const correction = overshoot / dist;
-            const factor = correction * 0.5;
+            const factor = correction * 0.1;
 
             child.pos.x += dx * factor;
             child.pos.y += dy * factor;

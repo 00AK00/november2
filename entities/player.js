@@ -169,8 +169,15 @@ export class Player extends BaseEntity {
         const mp = this.mainPhysicsParticle;
         if (!mp) return;
 
-        this.worldPos.x = mp.pos.x;
-        this.worldPos.y = mp.pos.y;
+        if (this.ready) {
+            this.worldPos.x = mp.pos.x;
+            this.worldPos.y = mp.pos.y;
+        } else {
+            mp.pos.x = this.worldPos.x;
+            mp.pos.y = this.worldPos.y
+        }
+
+
         this.pxSize = this.size * this.scene.mapTransform.tileSizePx;
     }
 

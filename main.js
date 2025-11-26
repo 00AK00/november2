@@ -84,12 +84,12 @@ export const mainSketch = (p) => {
     // Register scenes
     // this.p.shared.levels.level2;
     p.shared.sceneManager.register('menu', MenuScene);
-    p.shared.sceneManager.register('story1', ArtSceneOne);
+    p.shared.sceneManager.register('level1', ArtSceneOne);
     p.shared.sceneManager.register('chapter1', ChapterScene, {levels: [1, 2, 3]});
     p.shared.sceneManager.register('chapter2', ChapterScene, {levels: [4, 5, 6]});
     p.shared.sceneManager.register('chapter3', ChapterScene, {levels: [7, 8, 9]});
 
-    p.shared.sceneManager.register('level1', Level1Scene, { level: p.shared.levels.level1, nextScene: 'level2', chapter: 'chapter1' });
+    p.shared.sceneManager.register('level1level', Level1Scene, { level: p.shared.levels.level1, nextScene: 'level2', chapter: 'chapter1' });
     p.shared.sceneManager.register('level2', Level1Scene, { level: p.shared.levels.level2, nextScene: 'level3', chapter: 'chapter1' });
     p.shared.sceneManager.register('level3', Level1Scene, { level: p.shared.levels.level3, nextScene: 'level4', chapter: 'chapter1' });
     p.shared.sceneManager.register('level4', Level1Scene, { level: p.shared.levels.level4, nextScene: 'level5', chapter: 'chapter2' });
