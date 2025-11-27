@@ -173,8 +173,6 @@ export class ArtSceneOne extends BaseScene {
         this.waveInstances3 = [];
         this.bgAnim = new BackgroundAnimator(this.p);
         this.spriteAnim = new SpriteAnimator(this.p);
-        this.borderGraphic = p.createGraphics(p.width, p.height);
-        this.drawOrganicBorder(this.borderGraphic);
     }
 
 
@@ -232,7 +230,8 @@ export class ArtSceneOne extends BaseScene {
             vy: -0.5 - Math.random() * 0.3,
             frameOffset: Math.floor(Math.random() * 40)
         }));
-        // this.generateBorderPoints(); // Removed, no longer needed
+        this.borderGraphic = this.p.createGraphics(this.p.width, this.p.height);
+        this.drawOrganicBorder(this.borderGraphic);
         this.p.shared.audio.play('story1', { stopOthers: true });
     }
 
@@ -413,44 +412,6 @@ export class ArtSceneOne extends BaseScene {
         });
     }
 
-    // draw() {
-    //     const r = this.renderer;
-    //     const layers = r.layers;
-    //     const entitiesLayer = layers.entitiesLayer;
-    //     const worldLayer = layers.worldLayer;
-    //     const textureLayer = layers.ambientTexture;
-    //     const localFrame = this.p.frameCount - this.startFrame;
-    //     this.counter = Math.floor(localFrame / 30);
-    //     r.drawScene(() => {
-    //         super.draw();
-    //         if (this.counter < 7) {
-    //             this.sceneOne(entitiesLayer, textureLayer);
-    //             entitiesLayer.imageMode(this.p.CORNER);
-    //             entitiesLayer.image(this.borderGraphic, 0, 0);
-    //         } else if (this.counter < 10) {
-    //             this.sceneTwo(entitiesLayer, textureLayer);
-    //             entitiesLayer.imageMode(this.p.CORNER);
-    //             entitiesLayer.image(this.borderGraphic, 0, 0);
-    //         } else if (this.counter < 18) {
-    //             this.sceneThree(entitiesLayer, textureLayer);
-
-    //             const fadeStart = 16 * 30;
-    //             const fadeEnd = 17 * 30;
-
-    //             const fadeT = this.p.constrain(
-    //                 (localFrame - fadeStart) / (fadeEnd - fadeStart),
-    //                 0, 1
-    //             );
-
-    //             this.drawFade(textureLayer, fadeT * 255);
-    //             entitiesLayer.imageMode(this.p.CORNER);
-    //             entitiesLayer.image(this.borderGraphic, 0, 0);
-    //         } else {
-    //             this.p.shared.sceneManager.change('level1level');
-    //         }
-    //     });
-    // }
-
     sceneTwo(entitiesLayer, textureLayer) {
         entitiesLayer.background(this.p.shared.chroma.ambient);
         textureLayer.imageMode(this.p.CENTER);
@@ -512,9 +473,6 @@ export class ArtSceneOne extends BaseScene {
     cleanup() {
         this.Debug.log('level', "🧹 Story cleanup");
 
-        // UI back on
-        this.p.shared.ui.show();
-
         // stop audio
         this.p.shared.audio.stop('story1');
         this.p.shared.audio.stopAll?.();
@@ -541,12 +499,12 @@ export class ArtSceneOne extends BaseScene {
         this.startFrame = 0;
 
         // ensure tint doesn't leak
-        this.renderer.layers.entitiesLayer.noTint?.();
-        this.renderer.layers.ambientTexture.noTint?.();
+        // this.renderer.layers.entitiesLayer.noTint?.();
+        // this.renderer.layers.ambientTexture.noTint?.();
 
         // deactivate actors if needed
-        this.friend?.deactivate?.();
-        this.p.shared.player?.deactivate?.();
+        // this.friend?.deactivate?.();
+        // this.p.shared.player?.deactivate?.();
 
         super.cleanup();
     }
