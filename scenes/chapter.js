@@ -1,6 +1,7 @@
 import { BaseScene } from '../core/BaseScene.js';
 import { WobbleText } from '../components/WobbleText.js';
 import { MyButton } from '../components/myButton.js';
+import { Plankton } from '../entities/plankton.js';
 
 export class ChapterScene extends BaseScene {
     constructor(p, opts) {
@@ -10,11 +11,17 @@ export class ChapterScene extends BaseScene {
     }
 
     init() {
-        super.init();
+        this.levelData = this.p.shared.parseLevel(this.p.shared.levels.menu, this.p);
+        const [r, player] = super.init();
+
+        for (let i = 0; i < 30; i++) {
+            const plankton = new Plankton(this.p);
+            this.registerEntity(plankton);
+        }
         this.p.shared.ui.hide();
-        const r = this.renderer;
-        const player = this.p.shared.player;
         player.deactivate();
+        this.friend.deactivate();
+
         this.title = [];
         this.addInGameMenuButtons();
         this.addLevelButtons();
@@ -32,8 +39,8 @@ export class ChapterScene extends BaseScene {
         const H = layer.height;
 
         const rowWidth = W * 0.5;          // row = 1/3 total width
-        const btnHeight = H * 0.10;         // 10% screen height
-        const y = H * (2 / 3);                // bottom third
+        const btnHeight = H * 0.20;         // 10% screen height
+        const y = H /2 - btnHeight;                // bottom third
 
         const count = this.levelLabels.length;
         const padding = rowWidth * 0.05;    // 5% relative internal spacing
@@ -58,7 +65,8 @@ export class ChapterScene extends BaseScene {
                 () => {
                     // selectable action — replace as needed
                     this.p.shared.sceneManager.change("level" + (level));
-                }
+                },
+                this.p
             );
 
             this.registerUI(btn);
@@ -66,27 +74,31 @@ export class ChapterScene extends BaseScene {
     }
 
     update() {
-        const r = this.renderer;
-        super.update();
+        const [r, player, dt] = super.update();
         if (this.recentlyLaunchedScene || this.recentlyChangedScene) {
             r.markDirty('backgroundLayer');
+            r.markDirty('uiLayer');
         }
+        r.markDirty('entitiesLayer');
         r.markDirty('uiLayer');
     }
 
     draw() {
         const r = this.renderer;
         const layers = r.layers;
-        // r.use('chroma');
-
         r.drawScene(() => {
-            super.draw();
+            if (this.recentlyLaunchedScene || this.recentlyChangedScene) {
+                this.drawCurrentsUniformTexture();
+                this.drawWorldBoundary(layers.worldLayer);
+            }
+
             for (let t of this.title) {
                 t.draw(layers.entitiesLayer);
             }
-            this.p.shared.ui.draw(layers.uiLayer);
+            for (const entity of this.entities) {
+                entity.draw(layers.entitiesLayer, layers.ambientTexture);
+            }
             super.draw();
-
         });
     }
 

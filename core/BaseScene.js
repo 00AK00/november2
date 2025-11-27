@@ -33,6 +33,7 @@ export class BaseScene {
     this.levelGoal = {};
     this.useTextureLayer = 1.0;
     this.gameState = PLAYING;
+    this.friend = null;
   }
 
   init() {
@@ -77,6 +78,7 @@ export class BaseScene {
       this.levelGoal = this.levelData.goal;
       if (this.levelGoal) {
         const goalEntity = new Friend(this.p);
+        this.friend = goalEntity;
         goalEntity.reset({ x: this.levelGoal.x + 0.5, y: this.levelGoal.y + 0.5 });
         this.registerEntity(goalEntity);
       }
@@ -142,18 +144,20 @@ export class BaseScene {
 
   addInGameMenuButtons() {
     // Main Menu Button
-    const dim = 0.02 * this.renderer.layers.uiLayer.width;
+    const dim = 0.025 * this.renderer.layers.uiLayer.width;
     const btn = new MyButton(
       this.renderer.layers.uiLayer.width - dim - this.padding, // x (with 10px padding)
       this.padding,                     // y
       dim,                     // width
       dim,                     // height
-      "X",
+      "x",
       this.renderer.layers.uiLayer,
       () => {                 // onClick action
         this.p.shared.sceneManager.change("menu");
-      }
+      }, this.p
     );
+    btn.backgroundColor = this.p.shared.chroma.player;
+    btn.fontColor = this.p.color(255);
 
     this.registerUI(btn);
 
@@ -361,8 +365,9 @@ export class BaseScene {
 
     if (this.renderer.layerDirty.uiLayer) {
       const uiLayer = this.renderer.layers.uiLayer;
+      const shaderLayer = this.renderer.layers.entitiesLayer;
       for (const el of this.uiElements) {
-        el.draw(uiLayer);
+        el.draw(uiLayer, shaderLayer);
         // this.Debug.log('level', 'Drawing UI element:', el);
       }
     }

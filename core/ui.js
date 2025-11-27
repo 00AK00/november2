@@ -7,17 +7,17 @@ export function createUI(p) {
 
     draw(layer) {
       if (!this.visible) return;
-      layer.fill(100, 100, 255);
-      layer.textAlign(p.LEFT, p.TOP);
-      layer.textSize(layer.width / 80);
+      // layer.fill(100, 100, 255);
+      // layer.textAlign(p.LEFT, p.TOP);
+      // layer.textSize(layer.width / 80);
 
-      // Example: show FPS + player info
-      const fps = p.frameRate().toFixed(0);
-      const player = p.shared?.player;
-      const hp = player ? player.health : '-';
+      // // Example: show FPS + player info
+      // const fps = p.frameRate().toFixed(0);
+      // const player = p.shared?.player;
+      // const hp = player ? player.health : '-';
 
       //WEBGL canvas mode has (0,0) in center
-      layer.text(`FPS: ${fps}`, 10, 10);
+      // layer.text(`FPS: ${fps}`, 10, 10);
       // layer.text(`HP: ${hp}`, 10, 10 + layer.textSize());
     }
   };

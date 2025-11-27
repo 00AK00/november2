@@ -16,7 +16,7 @@ export class WobbleText {
         this.sampleFactor = opts.sampleFactor ?? 0.4;
 
         // wobble amount (px)
-        this.amp = opts.amp ?? 1;
+        this.amp = opts.amp ?? 2;
 
         // speed multiplier
         this.speed = opts.speed ?? 1;
@@ -26,8 +26,11 @@ export class WobbleText {
 
         // colors
         this.mainFill = opts.mainFill ?? this.p.color(this.p.shared.chroma.player);
+        this.outline1 = opts.outline1 ?? this.p.color(0);
+        this.outline2 = opts.outline2 ?? this.p.color(255);
         this.outline1 = opts.outline1 ?? this.p.color(this.p.shared.chroma.ambient);
-        this.outline2 = opts.outline2 ?? this.p.color(this.p.shared.chroma.terrain);
+        // this.outline2 = opts.outline2 ?? this.p.color(this.p.shared.chroma.terrain);
+        this.outline2 = opts.outline2 ?? this.p.color(this.p.shared.chroma.ambient);
 
         // Precompute points per character
         this.letters = this._computeLetters();
@@ -97,17 +100,20 @@ export class WobbleText {
 
     draw(layer) {
         const t = this.p.millis() * 0.002 * this.speed;
+        const layers = this.p.shared.renderer.layers;
 
         // Layer 1 — colored outline #1
+        // this._drawLayer(layers.uiLayer, this.outline1, (idx, i) => {
         this._drawLayer(layer, this.outline1, (idx, i) => {
             const wob = this._wobble(idx, i, t);
             return { x: wob.x + this.outlineOffset, y: wob.y + this.outlineOffset };
         });
 
         // Layer 2 — colored outline #2
+        // this._drawLayer(layers.uiLayer, this.outline2, (idx, i) => {
         this._drawLayer(layer, this.outline2, (idx, i) => {
             const wob = this._wobble(idx, i, t);
-            return { x: wob.x - this.outlineOffset, y: wob.y - this.outlineOffset };
+            return { x: wob.x - this.outlineOffset*2, y: wob.y - this.outlineOffset*2 };
         });
 
         // Layer 3 — main text
@@ -117,9 +123,14 @@ export class WobbleText {
         });
     }
 
-    _drawLayer(layer, col, offsetFn) {
+    _drawLayer(layer, col, offsetFn, outline=false) {
         layer.noStroke();
         layer.fill(col);
+        if (outline) {
+            layer.stroke(col);
+            layer.strokeWeight(2);
+            layer.noFill();
+        }
 
         for (const letter of this.letters) {
             const pts = letter.points;

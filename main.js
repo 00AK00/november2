@@ -3,6 +3,7 @@ import { createRenderer } from './core/renderer.js';
 import { registerControls } from './core/controls.js';
 import { registerSystemEvents, setupCanvasWithAdaptation, initializeCanvasPostSetup } from './core/system.js';
 import { createSceneManager } from './core/sceneManager.js';
+import { createAudioManager } from './core/audio.js';
 import { createGameState } from './core/state.js';
 import { Debug } from './core/debug.js';
 import { createUI } from './core/ui.js';
@@ -10,11 +11,13 @@ import { Settings } from './config/settings.js';
 import { parseLevel } from './core/parseLevel.js';
 import {applyChromaMapWithDisable} from './core/utils.js';
 
+
 import { MenuScene } from './scenes/menu.js';
 import { ArtSceneOne } from './scenes/story1.js';
 import { ChapterScene } from './scenes/chapter.js';
 import { Level1Scene } from './scenes/level1.js';
 import { GameOverScene } from './scenes/gameover.js';
+
 
 import { Player } from './entities/player.js';
 
@@ -25,7 +28,9 @@ export const mainSketch = (p) => {
 
   p.preload = () => {
     // p.shared.mainFont = p.loadFont('https://cdnjs.cloudflare.com/ajax/libs/topcoat/0.8.0/font/SourceCodePro-Regular.otf');
-    p.shared.mainFont = p.loadFont('./assets/found/Patrick_Hand/PatrickHand-Regular.ttf');
+    // p.shared.mainFont = p.loadFont('./assets/found/Patrick_Hand/PatrickHand-Regular.ttf');
+    p.shared.mainFont = p.loadFont('./assets/found/Rubik_Bubbles/RubikBubbles-Regular.ttf');
+    
     // p.shared.mainFont = p.loadFont('./assets/found/Comic_Neue/ComicNeue-Regular.ttf');
     p.shared.levels = p.loadJSON('./config/levels.json');
     p.shared.chroma = p.loadJSON('./config/chroma.json');
@@ -39,6 +44,8 @@ export const mainSketch = (p) => {
     p.shared.assets.storyAssets['ssheetWaves'] = p.loadImage('./assets/created/raw/waves_scaled.png');
     p.shared.assets.storyAssets['bgStorm'] = p.loadImage('./assets/created/raw/storm_bg_scaled.png');
     p.shared.assets.storyAssets['bgStormTrans'] = p.loadImage('./assets/created/raw/storm_bg_trans_scaled.png');
+    p.shared.assets.audio = {};
+    p.shared.assets.audio['story1'] = p.loadSound('./assets/created/anemone_script1.mp3');
     // p.shared.assets.logo = p.loadImage('./assets/created/logo1.png');
   };
 
@@ -46,6 +53,7 @@ export const mainSketch = (p) => {
     p.shared.Debug = Debug;
     p.shared.settings = Settings
     p.shared.timing = createTiming(p);
+    p.shared.audio = createAudioManager(p);
 
     applyChromaMapWithDisable(p, p.shared.chroma);
     // let colorCount = Object.keys(p.shared.chroma).length
@@ -80,14 +88,14 @@ export const mainSketch = (p) => {
 
     registerSystemEvents(p);
     registerControls(p);
-``
+    p.shared.audio.register('story1', p.shared.assets.audio['story1']);
     // Register scenes
     // this.p.shared.levels.level2;
     p.shared.sceneManager.register('menu', MenuScene);
     p.shared.sceneManager.register('level1', ArtSceneOne);
     p.shared.sceneManager.register('chapter1', ChapterScene, {levels: [1, 2, 3]});
     p.shared.sceneManager.register('chapter2', ChapterScene, {levels: [4, 5, 6]});
-    p.shared.sceneManager.register('chapter3', ChapterScene, {levels: [7, 8, 9]});
+    p.shared.sceneManager.register('chapter3', ChapterScene, {levels: [7, 8, 9, 10]});
 
     p.shared.sceneManager.register('level1level', Level1Scene, { level: p.shared.levels.level1, nextScene: 'level2', chapter: 'chapter1' });
     p.shared.sceneManager.register('level2', Level1Scene, { level: p.shared.levels.level2, nextScene: 'level3', chapter: 'chapter1' });

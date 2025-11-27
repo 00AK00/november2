@@ -2,6 +2,149 @@ import { BaseScene } from '../core/BaseScene.js';
 import { WobbleText } from '../components/WobbleText.js';
 import { MyButton } from '../components/myButton.js';
 
+class SpriteAnimator {
+    constructor(p) { this.p = p; }
+
+    getPingPongIndex(totalFrames, speed) {
+        const cycle = Math.floor(this.p.frameCount / speed);
+        const idx = cycle % (2 * (totalFrames - 1));
+        return idx < totalFrames ? idx : (2 * (totalFrames - 1) - idx);
+    }
+
+    drawPingPong(layer, sheet, pos, frames, speed) {
+        const fw = sheet.width / frames;
+        const fh = sheet.height;
+        const idx = this.getPingPongIndex(frames, speed);
+        layer.imageMode(this.p.CENTER);
+        layer.image(
+            sheet,
+            this.p.width * pos.x,
+            this.p.height * pos.y,
+            fw,
+            fh,
+            idx * fw,
+            0,
+            fw,
+            fh
+        );
+    }
+
+    drawWaveGrid(layer, sheet, arr, cols, rows, speed) {
+        const fw = sheet.width / cols;
+        const fh = sheet.height / rows;
+        for (const w of arr) {
+            const cyc = Math.floor((this.p.frameCount + w.frameOffset) / speed);
+            const idx = cyc % (cols * rows);
+            const r = Math.floor(idx / cols);
+            const c = idx % cols;
+            layer.image(
+                sheet,
+                w.x,
+                w.y,
+                fw,
+                fh,
+                c * fw,
+                r * fh,
+                fw,
+                fh
+            );
+            if (w.vx !== undefined) w.x += w.vx;
+            if (w.vy !== undefined) w.y += w.vy;
+            if (w.speed !== undefined) w.x += w.speed;
+        }
+    }
+
+    drawLightning(layer, sheet, arr, cols, rows, speed) {
+        const fw = sheet.width / cols;
+        const fh = sheet.height / rows;
+        for (const L of arr) {
+            const cyc = Math.floor((this.p.frameCount + L.frameOffset) / speed);
+            const idx = cyc % (cols * rows);
+            const r = Math.floor(idx / cols);
+            const c = idx % cols;
+            layer.image(
+                sheet,
+                L.x,
+                L.y,
+                fw,
+                fh,
+                c * fw,
+                r * fh,
+                fw,
+                fh
+            );
+        }
+    }
+}
+
+class BackgroundAnimator {
+    constructor(p) { this.p = p; }
+
+    drawAspectCorrect(layer, img, bgColor) {
+        const p = this.p;
+        if (bgColor) {
+            layer.push();
+            layer.noStroke();
+            layer.fill(bgColor);
+            layer.rect(0, 0, p.width, p.height);
+            layer.pop();
+        }
+        const iw = img.width;
+        const ih = img.height;
+        const vw = p.width;
+        const vh = p.height;
+        const imgRatio = iw / ih;
+        const viewRatio = vw / vh;
+        let scale;
+        if (imgRatio > viewRatio) {
+            scale = vw / iw;
+        } else {
+            scale = vh / ih;
+        }
+        const padding = 0.02; // 2 percent inward padding
+        const drawW = iw * scale * (1 - padding);
+        const drawH = ih * scale * (1 - padding);
+        layer.imageMode(p.CENTER);
+        layer.image(img, vw / 2, vh / 2, drawW, drawH);
+    }
+
+    drawPingPong(layer, images, speed) {
+        const N = images.length;
+
+        // fractional cycle
+        const cyc = this.p.frameCount / speed;
+
+        // ping-pong pattern index (fractional)
+        const rawIdx = cyc % (2 * (N - 1));
+
+        // integer + fractional split
+        const baseIdx = Math.floor(rawIdx);
+        const frac = rawIdx - baseIdx;  // 0..1 transition amount
+
+        // convert ping-pong into forward/backward logic
+        const forward = baseIdx < (N - 1);
+        const idxA = forward ? baseIdx : (2 * (N - 1) - baseIdx);
+        const idxB = forward ? idxA + 1 : idxA - 1;
+
+        const imgA = images[idxA];
+        const imgB = images[idxB];
+
+        // Crossfade between frames
+        layer.push();
+
+        // draw A with decreasing opacity
+        layer.tint(255, 255 * (1 - frac));
+        this.drawAspectCorrect(layer, imgA);
+
+        // draw B with increasing opacity
+        layer.tint(255, 255 * frac);
+        this.drawAspectCorrect(layer, imgB);
+
+        layer.pop();
+        layer.noTint();
+    }
+}
+
 export class ArtSceneOne extends BaseScene {
     constructor(p) {
         super(p);
@@ -15,7 +158,7 @@ export class ArtSceneOne extends BaseScene {
         this.sprites['scene1'] = {
             pink: p.shared.assets.storyAssets['ssheetPink'],
             yellow: p.shared.assets.storyAssets['ssheetYellow'],
-            pinkPosition: { x: 0.8, y: 0.8 },
+            pinkPosition: { x: 0.7, y: 0.8 },
             yellowPosition: { x: 0.6, y: 0.8 }
         };
         // these sprites are different drawing variants in each frame, rather than a continuous animation
@@ -28,15 +171,28 @@ export class ArtSceneOne extends BaseScene {
         this.waveInstances = [];
         this.yellowExit = null;
         this.waveInstances3 = [];
+        this.bgAnim = new BackgroundAnimator(this.p);
+        this.spriteAnim = new SpriteAnimator(this.p);
+        this.borderGraphic = p.createGraphics(p.width, p.height);
+        this.drawOrganicBorder(this.borderGraphic);
+    }
+
+
+    drawFade(layer, alpha) {
+        layer.push();
+        layer.noStroke();
+        layer.fill(0, alpha);
+        layer.rect(0, 0, this.p.width, this.p.height);
+        layer.pop();
     }
 
     init() {
-        
-        super.init();
+        this.levelData = this.p.shared.parseLevel(this.p.shared.levels.menu, this.p);
+        const [r, player] = super.init();
         this.p.shared.ui.hide();
-        const r = this.renderer;
-        const player = this.p.shared.player;
         player.deactivate();
+        this.friend.deactivate();
+
         r.reset();
         this.startFrame = this.p.frameCount;
         this.counter = 0;
@@ -76,6 +232,125 @@ export class ArtSceneOne extends BaseScene {
             vy: -0.5 - Math.random() * 0.3,
             frameOffset: Math.floor(Math.random() * 40)
         }));
+        // this.generateBorderPoints(); // Removed, no longer needed
+        this.p.shared.audio.play('story1', { stopOthers: true });
+    }
+
+    drawOrganicBorder(layer) {
+        const p = this.p;
+        const col = p.shared.chroma.terrain;
+
+        // --- Compute original (non-zoomed) background bounds using bg1 as reference ---
+        const img = this.fullScreenArt['scene1'][0];
+        const iw = img.width;
+        const ih = img.height;
+        const vw = p.width;
+        const vh = p.height;
+        const imgRatio = iw / ih;
+        const viewRatio = vw / vh;
+
+        let scale;
+        if (imgRatio > viewRatio) {
+            scale = vw / iw;
+        } else {
+            scale = vh / ih;
+        }
+
+        const padding = 0.1;
+        const drawW = iw * scale * (1 - padding);
+        const drawH = ih * scale * (1 - padding);
+
+        const cx = vw / 2;
+        const cy = vh / 2;
+
+        const left = cx - drawW / 2;
+        const right = cx + drawW / 2;
+        const top = cy - drawH / 2;
+        const bottom = cy + drawH / 2;
+
+        const noiseScale = 0.5;
+        const wobble = 22;
+        const t = p.frameCount * 0.01;
+        const step = 10;
+
+        layer.push();
+        layer.noStroke();
+        layer.fill(col);
+
+        // ---- TOP BORDER (screen top to image top) ----
+        layer.beginShape();
+        // outer edge: full screen width at y=0
+        layer.vertex(0, 0);
+        layer.vertex(vw, 0);
+        // inner, wobbly edge: from right to left
+        for (let x = vw; x >= 0; x -= step) {
+            let innerY;
+            if (x < left || x > right) {
+                // outside image span: straight to top edge
+                innerY = top;
+            } else {
+                const n = p.noise(x * noiseScale, t) - 0.5;
+                innerY = top + n * wobble;
+            }
+            layer.vertex(x, innerY);
+        }
+        layer.endShape(p.CLOSE);
+
+        // ---- BOTTOM BORDER (image bottom to screen bottom) ----
+        layer.beginShape();
+        // outer edge: full screen width at y=vh
+        layer.vertex(vw, vh);
+        layer.vertex(0, vh);
+        // inner, wobbly edge: from left to right
+        for (let x = 0; x <= vw; x += step) {
+            let innerY;
+            if (x < left || x > right) {
+                innerY = bottom;
+            } else {
+                const n = p.noise(x * noiseScale, t + 20) - 0.5;
+                innerY = bottom + n * wobble;
+            }
+            layer.vertex(x, innerY);
+        }
+        layer.endShape(p.CLOSE);
+
+        // ---- LEFT BORDER (screen left to image left) ----
+        layer.beginShape();
+        // outer edge: full screen height at x=0
+        layer.vertex(0, 0);
+        layer.vertex(0, vh);
+        // inner, wobbly edge: from bottom to top
+        for (let y = vh; y >= 0; y -= step) {
+            let innerX;
+            if (y < top || y > bottom) {
+                innerX = left;
+            } else {
+                const n = p.noise(y * noiseScale, t + 40) - 0.5;
+                innerX = left + n * wobble;
+            }
+            layer.vertex(innerX, y);
+        }
+        layer.endShape(p.CLOSE);
+
+        // ---- RIGHT BORDER (image right to screen right) ----
+        layer.beginShape();
+        // outer edge: full screen height at x=vw
+        layer.vertex(vw, vh);
+        layer.vertex(vw, 0);
+        // inner, wobbly edge: from top to bottom
+        for (let y = 0; y <= vh; y += step) {
+            let innerX;
+            if (y < top || y > bottom) {
+                innerX = right;
+            } else {
+                const n = p.noise(y * noiseScale, t + 60) - 0.5;
+                innerX = right + n * wobble;
+            }
+            layer.vertex(innerX, y);
+        }
+        layer.endShape(p.CLOSE);
+
+        layer.pop();
     }
 
 
@@ -98,21 +373,83 @@ export class ArtSceneOne extends BaseScene {
         const layers = r.layers;
         const entitiesLayer = layers.entitiesLayer;
         const textureLayer = layers.ambientTexture;
-        const localFrame = this.p.frameCount - this.startFrame;
-        this.counter = Math.floor(localFrame / 30);
+
+        // compute elapsed time in seconds at 30FPS
+        const elapsedSec = (this.p.frameCount - this.startFrame) / 30;
+
         r.drawScene(() => {
             super.draw();
-            if (this.counter < 3) {
+
+            if (elapsedSec < 6) {
+                // ---- Scene 1 ----
                 this.sceneOne(entitiesLayer, textureLayer);
-            } else if (this.counter < 5) {
+                entitiesLayer.imageMode(this.p.CORNER);
+                entitiesLayer.image(this.borderGraphic, 0, 0);
+
+            } else if (elapsedSec < 9) {
+                // ---- Scene 2 ----
                 this.sceneTwo(entitiesLayer, textureLayer);
-            } else if (this.counter < 10) {
+                entitiesLayer.imageMode(this.p.CORNER);
+                entitiesLayer.image(this.borderGraphic, 0, 0);
+
+            } else if (elapsedSec < 18) {
+                // ---- Scene 3 ----
                 this.sceneThree(entitiesLayer, textureLayer);
+
+                // fade between 16s → 17s
+                const fadeT = this.p.constrain(
+                    (elapsedSec - 16) / (17 - 16),
+                    0, 1
+                );
+                this.drawFade(textureLayer, fadeT * 255);
+
+                entitiesLayer.imageMode(this.p.CORNER);
+                entitiesLayer.image(this.borderGraphic, 0, 0);
+
             } else {
+                // ---- End ----
                 this.p.shared.sceneManager.change('level1level');
             }
         });
     }
+
+    // draw() {
+    //     const r = this.renderer;
+    //     const layers = r.layers;
+    //     const entitiesLayer = layers.entitiesLayer;
+    //     const worldLayer = layers.worldLayer;
+    //     const textureLayer = layers.ambientTexture;
+    //     const localFrame = this.p.frameCount - this.startFrame;
+    //     this.counter = Math.floor(localFrame / 30);
+    //     r.drawScene(() => {
+    //         super.draw();
+    //         if (this.counter < 7) {
+    //             this.sceneOne(entitiesLayer, textureLayer);
+    //             entitiesLayer.imageMode(this.p.CORNER);
+    //             entitiesLayer.image(this.borderGraphic, 0, 0);
+    //         } else if (this.counter < 10) {
+    //             this.sceneTwo(entitiesLayer, textureLayer);
+    //             entitiesLayer.imageMode(this.p.CORNER);
+    //             entitiesLayer.image(this.borderGraphic, 0, 0);
+    //         } else if (this.counter < 18) {
+    //             this.sceneThree(entitiesLayer, textureLayer);
+
+    //             const fadeStart = 16 * 30;
+    //             const fadeEnd = 17 * 30;
+
+    //             const fadeT = this.p.constrain(
+    //                 (localFrame - fadeStart) / (fadeEnd - fadeStart),
+    //                 0, 1
+    //             );
+
+    //             this.drawFade(textureLayer, fadeT * 255);
+    //             entitiesLayer.imageMode(this.p.CORNER);
+    //             entitiesLayer.image(this.borderGraphic, 0, 0);
+    //         } else {
+    //             this.p.shared.sceneManager.change('level1level');
+    //         }
+    //     });
+    // }
 
     sceneTwo(entitiesLayer, textureLayer) {
         entitiesLayer.background(this.p.shared.chroma.ambient);
@@ -120,134 +457,35 @@ export class ArtSceneOne extends BaseScene {
         const bgImages = this.fullScreenArt['scene2'];
         const solidBg = bgImages[0];
         const transBg = bgImages[1];
-        textureLayer.image(solidBg, this.p.width / 2, this.p.height / 2, this.p.width, this.p.height);
+        this.bgAnim.drawAspectCorrect(textureLayer, solidBg, this.p.shared.chroma.terrain);
 
         // zooming transparent layer
         const scaleFactor = 1 + 0.05 * Math.sin(this.p.frameCount * 0.05);
         textureLayer.push();
-        textureLayer.translate(this.p.width / 2, this.p.height / 2);
+        // textureLayer.translate(this.p.width / 2, this.p.height / 2);
         textureLayer.scale(scaleFactor);
         textureLayer.imageMode(this.p.CENTER);
-        textureLayer.image(transBg, 0, 0, this.p.width, this.p.height);
+        this.bgAnim.drawAspectCorrect(textureLayer, transBg);
         textureLayer.pop();
 
-        const lighteningSheet = this.sprites['scene2'].lightening;
-        const lFrameWidth = lighteningSheet.width / 3;
-        const lFrameHeight = lighteningSheet.height / 2;
-        for (const L of this.lightningInstances) {
-            const lCycle = Math.floor((this.p.frameCount + L.frameOffset) / 5);
-            const lFrameIdx = lCycle % 6;
-            const lRow = Math.floor(lFrameIdx / 3);
-            const lCol = lFrameIdx % 3;
-            textureLayer.imageMode(this.p.CENTER);
-            textureLayer.image(
-                lighteningSheet,
-                L.x,
-                L.y,
-                lFrameWidth,
-                lFrameHeight,
-                lCol * lFrameWidth,
-                lRow * lFrameHeight,
-                lFrameWidth,
-                lFrameHeight
-            );
-        }
-
-        const wavesSheet = this.sprites['scene2'].waves;
-        const wFrameWidth = wavesSheet.width / 2;
-        const wFrameHeight = wavesSheet.height / 2;
-        for (const W of this.waveInstances) {
-            const wCycle = Math.floor((this.p.frameCount + W.frameOffset) / 10);
-            const wFrameIdx = wCycle % 4;
-            const wRow = Math.floor(wFrameIdx / 2);
-            const wCol = wFrameIdx % 2;
-            textureLayer.imageMode(this.p.CENTER);
-            textureLayer.image(
-                wavesSheet,
-                W.x,
-                W.y,
-                wFrameWidth,
-                wFrameHeight,
-                wCol * wFrameWidth,
-                wRow * wFrameHeight,
-                wFrameWidth,
-                wFrameHeight
-            );
-            W.x += W.speed;
-            if (W.x > this.p.width + 50) W.x = -50;
-        }
+        this.spriteAnim.drawLightning(textureLayer, this.sprites['scene2'].lightening, this.lightningInstances, 3, 2, 5);
+        this.spriteAnim.drawWaveGrid(textureLayer, this.sprites['scene2'].waves, this.waveInstances, 2, 2, 10);
     }
 
     sceneOne(entitiesLayer, textureLayer) {
         entitiesLayer.background(this.p.shared.chroma.ambient);
         textureLayer.imageMode(this.p.CENTER);
-        const bgImages = this.fullScreenArt['scene1'];
-        const N = bgImages.length;
-        const cycle = Math.floor(this.p.frameCount / 30);
-        const idx = cycle % (2 * (N - 1));
-        const pingPong = idx < N ? idx : (2 * (N - 1) - idx);
-        const bgImage = bgImages[pingPong];
-        textureLayer.image(bgImage, this.p.width / 2, this.p.height / 2, this.p.width, this.p.height);
-
-        // on top of texture
-        const spriteSheet = this.sprites['scene1'].pink;
-        const frameWidth = spriteSheet.width / 3;
-        const frameHeight = spriteSheet.height;
-        const animCycle = Math.floor(this.p.frameCount / 10);
-        const pingIdx = animCycle % (2 * (3 - 1));
-        const frameIdx = pingIdx < 3 ? pingIdx : (2 * (3 - 1) - pingIdx);
-        textureLayer.imageMode(this.p.CENTER);
-        textureLayer.image(spriteSheet, this.p.width * this.sprites['scene1'].pinkPosition.x, this.p.height * this.sprites['scene1'].pinkPosition.y, frameWidth, frameHeight, frameIdx * frameWidth, 0, frameWidth, frameHeight);
-
-        const yellowSheet = this.sprites['scene1'].yellow;
-        const yFrameWidth = yellowSheet.width / 3;
-        const yFrameHeight = yellowSheet.height;
-        const yCycle = Math.floor(this.p.frameCount / 10);
-        const yPing = yCycle % (2 * (3 - 1));
-        const yAnim = yPing < 3 ? yPing : (2 * (3 - 1) - yPing);
-        textureLayer.imageMode(this.p.CENTER);
-        textureLayer.image(
-            yellowSheet,
-            this.p.width * this.sprites['scene1'].yellowPosition.x,
-            this.p.height * this.sprites['scene1'].yellowPosition.y,
-            yFrameWidth,
-            yFrameHeight,
-            yAnim * yFrameWidth,
-            0,
-            yFrameWidth,
-            yFrameHeight
-        );
+        this.bgAnim.drawPingPong(textureLayer, this.fullScreenArt['scene1'], 30);
+        this.spriteAnim.drawPingPong(textureLayer, this.sprites['scene1'].pink, this.sprites['scene1'].pinkPosition, 3, 10);
+        this.spriteAnim.drawPingPong(textureLayer, this.sprites['scene1'].yellow, this.sprites['scene1'].yellowPosition, 3, 10);
     }
 
     sceneThree(entitiesLayer, textureLayer) {
         entitiesLayer.background(this.p.shared.chroma.ambient);
         textureLayer.imageMode(this.p.CENTER);
 
-        const bgImages = this.fullScreenArt['scene1'];
-        const N = bgImages.length;
-        const cycle = Math.floor(this.p.frameCount / 30);
-        const idx = cycle % (2 * (N - 1));
-        const pingPong = idx < N ? idx : (2 * (N - 1) - idx);
-        const bgImage = bgImages[pingPong];
-        textureLayer.image(bgImage, this.p.width / 2, this.p.height / 2, this.p.width, this.p.height);
-
-        const pinkSheet = this.sprites['scene1'].pink;
-        const pw = pinkSheet.width / 3;
-        const ph = pinkSheet.height;
-        const animCycle = Math.floor(this.p.frameCount / 10);
-        const pingIdx = animCycle % (2 * (3 - 1));
-        const frameIdx = pingIdx < 3 ? pingIdx : (2 * (3 - 1) - pingIdx);
-        textureLayer.image(
-            pinkSheet,
-            this.p.width * this.sprites['scene1'].pinkPosition.x,
-            this.p.height * this.sprites['scene1'].pinkPosition.y,
-            pw,
-            ph,
-            frameIdx * pw,
-            0,
-            pw,
-            ph
-        );
+        this.bgAnim.drawPingPong(textureLayer, this.fullScreenArt['scene1'], 30);
+        this.spriteAnim.drawPingPong(textureLayer, this.sprites['scene1'].pink, this.sprites['scene1'].pinkPosition, 3, 10);
 
         this.yellowExit.x += this.yellowExit.vx;
         this.yellowExit.y += this.yellowExit.vy;
@@ -268,60 +506,48 @@ export class ArtSceneOne extends BaseScene {
         );
         textureLayer.pop();
 
-        const wavesSheet = this.sprites['scene2'].waves;
-        const ww = wavesSheet.width / 2;
-        const wh = wavesSheet.height / 2;
-
-        for (const W of this.waveInstances3) {
-            const wCycle = Math.floor((this.p.frameCount + W.frameOffset) / 10);
-            const wFrameIdx = wCycle % 4;
-            const wRow = Math.floor(wFrameIdx / 2);
-            const wCol = wFrameIdx % 2;
-
-            textureLayer.image(
-                wavesSheet,
-                W.x,
-                W.y,
-                ww,
-                wh,
-                wCol * ww,
-                wRow * wh,
-                ww,
-                wh
-            );
-
-            W.x += W.vx;
-            W.y += W.vy;
-        }
-    }
-
-    sceneFour(entitiesLayer, textureLayer) {
-        entitiesLayer.background(this.p.shared.chroma.ambient);
-        textureLayer.imageMode(this.p.CENTER);
-        const bgImages = this.fullScreenArt['scene1'];
-        const N = bgImages.length;
-        const cycle = Math.floor(this.p.frameCount / 30);
-        const idx = cycle % (2 * (N - 1));
-        const pingPong = idx < N ? idx : (2 * (N - 1) - idx);
-        const bgImage = bgImages[pingPong];
-        textureLayer.image(bgImage, this.p.width / 2, this.p.height / 2, this.p.width, this.p.height);
-
-        // on top of texture
-        const spriteSheet = this.sprites['scene1'].pink;
-        const frameWidth = spriteSheet.width / 3;
-        const frameHeight = spriteSheet.height;
-        const animCycle = Math.floor(this.p.frameCount / 10);
-        const pingIdx = animCycle % (2 * (3 - 1));
-        const frameIdx = pingIdx < 3 ? pingIdx : (2 * (3 - 1) - pingIdx);
-        textureLayer.imageMode(this.p.CENTER);
-        textureLayer.image(spriteSheet, this.p.width * this.sprites['scene1'].pinkPosition.x, this.p.height * this.sprites['scene1'].pinkPosition.y, frameWidth, frameHeight, frameIdx * frameWidth, 0, frameWidth, frameHeight);
+        this.spriteAnim.drawWaveGrid(textureLayer, this.sprites['scene2'].waves, this.waveInstances3, 2, 2, 10);
     }
 
     cleanup() {
         this.Debug.log('level', "🧹 Story cleanup");
+
+        // UI back on
         this.p.shared.ui.show();
-        super.cleanup();
+
+        // stop audio
+        this.p.shared.audio.stop('story1');
+        this.p.shared.audio.stopAll?.();
+
+        // clear sprite instances
+        this.lightningInstances.length = 0;
+        this.waveInstances.length = 0;
+        this.waveInstances3.length = 0;
+        this.yellowExit = null;
+
+        // graphics cleanup
+        if (this.borderGraphic) {
+            this.borderGraphic.remove();
+            this.borderGraphic = null;
+        }
+
+        // clear layers
         this.renderer.layers.entitiesLayer.clear();
+        this.renderer.layers.ambientTexture.clear?.();
+        this.renderer.layers.worldLayer.clear?.();
+
+        // reset counters
         this.counter = 0;
+        this.startFrame = 0;
+
+        // ensure tint doesn't leak
+        this.renderer.layers.entitiesLayer.noTint?.();
+        this.renderer.layers.ambientTexture.noTint?.();
+
+        // deactivate actors if needed
+        this.friend?.deactivate?.();
+        this.p.shared.player?.deactivate?.();
+
+        super.cleanup();
     }
 }

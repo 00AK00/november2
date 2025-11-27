@@ -41,7 +41,6 @@ export class StarFishAndCoral extends BaseEntity {
 
         this.targetCount = 3;
         this.shapeTexture = [];
-        console.log('HELLOWWWWWW');
 
         for (let i = 0; i < this.targetCount; i++) {
             let shapeType = p.random(shapeTypes);
@@ -57,7 +56,6 @@ export class StarFishAndCoral extends BaseEntity {
                 cached = g;
             }
             this.shapeTexture[i] = cached;
-            console.log('generated ambient shape texture', shapeType);
         }
 
         this.colorTexture = p.createGraphics(64, 64);

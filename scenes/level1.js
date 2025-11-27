@@ -23,7 +23,6 @@ export class Level1Scene extends BaseScene {
             const coral = new StarFishAndCoral(this.p);
             this.registerEntity(coral);
         }
-
         this.addInGameMenuButtons();
     }
 

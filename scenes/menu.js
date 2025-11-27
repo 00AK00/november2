@@ -1,19 +1,26 @@
 import { BaseScene } from '../core/BaseScene.js';
 import { WobbleText } from '../components/WobbleText.js';
 import { MyButton } from '../components/myButton.js';
+import { Plankton } from '../entities/plankton.js';
 
 export class MenuScene extends BaseScene {
     constructor(p) {
         super(p);
         this.title = null;
+
     }
 
     init() {
-        super.init();
+        this.levelData = this.p.shared.parseLevel(this.p.shared.levels.menu, this.p);
+        const [r, player] = super.init();
+
+        for (let i = 0; i < 30; i++) {
+            const plankton = new Plankton(this.p);
+            this.registerEntity(plankton);
+        }
         this.p.shared.ui.hide();
-        const r = this.renderer;
-        const player = this.p.shared.player;
         player.deactivate();
+        this.friend.deactivate();
 
         this.title = [];
         this.createTextTitle();
@@ -26,7 +33,7 @@ export class MenuScene extends BaseScene {
         const uiLayer = this.renderer.layers.uiLayer;
         const baseWidth = this.renderer.layers.uiLayer.width;
         const baseHeight = this.renderer.layers.uiLayer.height;
-        const baseSize = Math.min(baseHeight / 6, baseWidth / 6);
+        const baseSize = Math.min(baseHeight, baseWidth)/8;
         this.title.push(new WobbleText(
             this.p,
             font,
@@ -38,7 +45,7 @@ export class MenuScene extends BaseScene {
             this.renderer.layers.entitiesLayer,
             {
                 centered: true,
-                outlineOffset: 2,
+                outlineOffset: 1,
             }
         ));
         this.title.push(new WobbleText(
@@ -61,12 +68,12 @@ export class MenuScene extends BaseScene {
             font,
             "ANEMONE",
             baseWidth / 2,   // x
-            baseHeight / 3 + (2*baseSize / 3),  // y
+            baseHeight / 3 + (2 * baseSize / 3),  // y
             baseSize * 1.6,   // size
             this.renderer.layers.entitiesLayer,
             {
                 centered: true,
-                outlineOffset: 2,
+                outlineOffset: 1,
             }
         ))
     }
@@ -78,72 +85,112 @@ export class MenuScene extends BaseScene {
         // this.title.forEach(t => t.onResize?.(this.renderer.layers.entitiesLayer));
     }
 
-    addLevelButtons(labels = ["Chapter 1", "Chapter 2", "Chapter 3"]) {
+    addLevelButtons(
+        labels = ["I", "II", "III"],
+        startY = 0.55,
+        endY = 0.90
+    ) {
         const layer = this.renderer.layers.uiLayer;
         const W = layer.width;
         const H = layer.height;
 
-        const rowWidth = W * 0.5;          // row = 1/3 total width
-        const btnHeight = H * 0.10;         // 10% screen height
-        const y = H * (2 / 3);                // bottom third
+        // Vertical layout band
+        const bandTop = startY * H;
+        const bandBottom = endY * H;
+        const bandHeight = bandBottom - bandTop;
 
+        // -----------------------------
+        // PLAY BUTTON (top of band)
+        // -----------------------------
+        const playWidth = W * 0.32;
+        const playHeight = bandHeight * 0.22;
+        const playX = (W - playWidth) / 2;
+        const playY = bandTop + bandHeight * 0.30 - playHeight / 2;
+
+        const playBtn = new MyButton(
+            playX,
+            playY,
+            playWidth,
+            playHeight,
+            "PLAY",
+            layer,
+            () => this.p.shared.sceneManager.change("level1"),
+            this.p
+        );
+        this.registerUI(playBtn);
+
+        // -----------------------------
+        // CHAPTER BUTTONS (row beneath PLAY)
+        // -----------------------------
         const count = labels.length;
-        const padding = rowWidth * 0.05;    // 5% relative internal spacing
-        const totalPadding = padding * (count - 1);
+        if (count === 0) return;
 
-        const availableWidth = rowWidth - totalPadding;
-        const btnWidth = availableWidth / count;
+        // How wide the row is allowed to span
+        const rowWidth = W * 0.65;
 
-        // center the whole row
-        const originX = (W - rowWidth) / 2;
+        const chapterBtnHeight = bandHeight * 0.16;
+        const chapterBtnWidth = (rowWidth / count) * 0.7;
+
+        const totalButtonsWidth = chapterBtnWidth * count;
+        const totalPad = rowWidth - totalButtonsWidth;
+        const pad = totalPad / (count + 1);
+
+        // Center horizontally
+        const chapterRowStartX = (W - rowWidth) / 2 + pad;
+
+        // Vertical placement of chapter row
+        const chaptersY = bandTop + bandHeight * 0.75 - chapterBtnHeight / 2;
 
         labels.forEach((label, i) => {
-            const x = originX + i * (btnWidth + padding);
+            const x = chapterRowStartX + i * (chapterBtnWidth + pad);
 
             const btn = new MyButton(
                 x,
-                y,
-                btnWidth,
-                btnHeight,
+                chaptersY,
+                chapterBtnWidth,
+                chapterBtnHeight,
                 label,
-                this.renderer.layers.uiLayer,
-                () => {
-                    // selectable action — replace as needed
-                    this.p.shared.sceneManager.change("chapter" + (i + 1));
-                }
+                layer,
+                () => this.p.shared.sceneManager.change("chapter" + (i + 1)),
+                this.p
             );
 
             this.registerUI(btn);
         });
     }
 
-    onKeyPressed(key, keyCode) {
-        super.onKeyPressed(key, keyCode);
-        this.p.shared.sceneManager.change('level1');
-        // this.p.shared.sceneManager.change('test');
-    }
+    // onKeyPressed(key, keyCode) {
+    //     super.onKeyPressed(key, keyCode);
+    //     this.p.shared.sceneManager.change('level1');
+    //     // this.p.shared.sceneManager.change('test');
+    // }
 
     update() {
-        const r = this.renderer;
+        const [r, player, dt] = super.update();
         if (this.recentlyLaunchedScene || this.recentlyChangedScene) {
             r.markDirty('backgroundLayer');
             r.markDirty('uiLayer');
         }
         r.markDirty('entitiesLayer');
-
+        r.markDirty('uiLayer');
     }
 
     draw() {
         const r = this.renderer;
         const layers = r.layers;
-        // r.use('chroma');
-
         r.drawScene(() => {
-            super.draw();
+            if (this.recentlyLaunchedScene || this.recentlyChangedScene) {
+                this.drawCurrentsUniformTexture();
+                this.drawWorldBoundary(layers.worldLayer);
+            }
+
             for (let t of this.title) {
                 t.draw(layers.entitiesLayer);
             }
-
+            for (const entity of this.entities) {
+                entity.draw(layers.entitiesLayer, layers.ambientTexture);
+            }
+            super.draw();
         });
     }
 
