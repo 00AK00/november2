@@ -227,8 +227,8 @@ export class Spikes extends BaseEntity {
         // }
     }
 
-    init(scene) {
-        this.scene = scene;
+    init() {
+        // this.scene = scene;
         this.pxSize = this.size * this.scene.mapTransform.tileSizePx;
     }
 

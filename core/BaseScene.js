@@ -8,6 +8,7 @@ import { MyButton } from '../components/myButton.js';
 import { Grass } from '../entities/grass.js';
 import { Friend } from '../entities/friend.js';
 import { Spikes } from '../entities/spikes.js';
+import {PathFollower} from "../entities/pathFollower.js";
 
 const PLAYING = 0;
 const COMPLETED = 1;
@@ -91,7 +92,17 @@ export class BaseScene {
               this.registerEntity(grass);
             }
             break;
-          // add more entity types here
+
+          case 'pathFollower':
+            let newLegend = entity.ch + "_pathfollower";
+            let res = this.getEntity(newLegend);
+            if (res === null) {
+              res = new PathFollower(this.p);
+              this.registerEntity(res);
+            }
+            res.legend = newLegend;
+            res.addToPath({x: entity.x, y: entity.y});
+            break;
         }
       }
 
@@ -100,7 +111,6 @@ export class BaseScene {
         switch (hazard.type) {
           case 'spike':
             const spike = new Spikes(this.p, hazard);
-            spike.init(this);
             this.registerEntity(spike);
             break;
         }
@@ -177,7 +187,7 @@ export class BaseScene {
       if (!entity.hazard) continue;
 
       if (entity.checkCollisionWithPlayer?.(player)) {
-        // console.warn('⚠️ Player hit hazard:', entity);
+        console.warn('⚠️ Player hit hazard:', entity);
         player.onHazard?.(entity);
         if (player.health <= 0) {
           this.gameState = FAILED;
@@ -211,11 +221,6 @@ export class BaseScene {
       case FAILED:
         this.cleanup();
         this.init();
-        // const spawnWorld = {
-        //   x: this.levelData.spawn.x + 0.5,
-        //   y: this.levelData.spawn.y + 0.5
-        // };
-        // player.reset(spawnWorld);
         break;
     }
 
@@ -284,12 +289,17 @@ export class BaseScene {
     this.uiElements.push(element);
   }
 
+  getEntity(legend) {
+    for (const entity of this.entities) {
+      if (entity.legend === legend) return entity;
+    }
+    return null;
+  }
+
   registerEntity(entity) {
     this.entities.push(entity);
     entity.setScene(this);
-    if (typeof entity.initAmbientGeneratedEntity === "function") {
-      entity.initAmbientGeneratedEntity();
-    }
+    entity.init();
   }
 
   getTile(x, y) {

@@ -50,7 +50,7 @@ export class Plankton extends BaseEntity {
         this.generateArt();
     }
 
-    initAmbientGeneratedEntity() {
+    init() {
         if (!this.scene || !this.scene.levelData) return;
 
         const { cols, rows } = this.scene.levelData;

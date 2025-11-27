@@ -14,7 +14,7 @@ export class StarFishAndCoral extends BaseEntity {
 
 
         this.colorType = p.random(colorTypes);
-        console.log('selected color type:', this.colorType);
+        // console.log('selected color type:', this.colorType);
 
         this.mainPhysicsParticle = null;
         this.reefColors = [
@@ -69,7 +69,7 @@ export class StarFishAndCoral extends BaseEntity {
         this.positions = [];
     }
 
-    initAmbientGeneratedEntity() {
+    init() {
         if (!this.scene || !this.scene.levelData) return;
 
         const { cols, rows } = this.scene.levelData;

@@ -102,7 +102,8 @@ export const mainSketch = (p) => {
     p.shared.sceneManager.register('level3', Level1Scene, { level: p.shared.levels.level3, nextScene: 'level4', chapter: 'chapter1' });
     p.shared.sceneManager.register('level4', Level1Scene, { level: p.shared.levels.level4, nextScene: 'level5', chapter: 'chapter2' });
     p.shared.sceneManager.register('level5', Level1Scene, { level: p.shared.levels.level5, nextScene: 'level6', chapter: 'chapter2' });
-    p.shared.sceneManager.register('level6', Level1Scene, { level: p.shared.levels.level6, nextScene: 'menu', chapter: 'chapter2' });
+    p.shared.sceneManager.register('level6', Level1Scene, { level: p.shared.levels.level6, nextScene: 'level7', chapter: 'chapter2' });
+    p.shared.sceneManager.register('level7', Level1Scene, { level: p.shared.levels.level7, nextScene: 'menu', chapter: 'chapter3' });
     p.shared.sceneManager.continue = true;
 
     // p.shared.sceneManager.register('gameover', GameOverScene);    // Start with menu

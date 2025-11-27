@@ -58,7 +58,7 @@ export function parseLevel(levelData, p) {
       const ch = layers.entities[y][x];
       if (entityLegend[ch]) {
         const pos = toWorld(x, y);
-        result.entities.push({ ...pos, ...entityLegend[ch] });
+        result.entities.push({ ...pos, ...entityLegend[ch], legend: ch } );
       }
     }
   }

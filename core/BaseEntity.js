@@ -13,6 +13,7 @@ export class BaseEntity {
     this.baseBuoyancy = 0;      // default buoyancy for floating entities
     this.active = true;
     this.useMemoryTethers = true;
+    this.legend = null; 
   }
 
   createPhysicsParticle(x, y, mass = 1, main = false, fixed = false) {
@@ -35,6 +36,10 @@ export class BaseEntity {
 
   onCurrent(particle, current) {
     particle.addForce(current.dx, current.dy);
+  }
+
+  init(){
+    //no-op
   }
 
   applyForces(dt) {
