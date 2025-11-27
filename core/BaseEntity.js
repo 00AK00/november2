@@ -81,6 +81,8 @@ export class BaseEntity {
       c.pos.y = this.mainPhysicsParticle.pos.y + c.offsets.y;
       c.prevPos.x = c.pos.x;
       c.prevPos.y = c.pos.y;
+      c.force.x = 0;
+      c.force.y = 0;  
 
       stack.push(...c.children);
     }

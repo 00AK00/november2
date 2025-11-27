@@ -38,6 +38,21 @@ export function createSceneManager(p) {
       // if (p.shared.isPortrait) {
       //   p.shared.renderer.drawScene(() => {
       //       p.background(p.shared.chroma.background);
+      //       // p.fill(p.shared.chroma.player);
+      //       // p.noStroke();
+      //       // p.textAlign(p.CENTER, p.CENTER);
+      //       // // layers.uiLayer.noFill();
+      //       // // layers.uiLayer.stroke(0);
+      //       // // layers.uiLayer.textAlign(layers.uiLayer.CENTER, layers.uiLayer.CENTER);
+      //       // let textSize = p.width/10;
+      //       // p.textSize(textSize);
+      //       // // layers.uiLayer.textSize(textSize);
+
+      //       // const textX = p.width / 2;
+      //       // let anchory = p.height / 12;
+
+      //       // p.text("ROTATE PLZ", textX, anchory);
+      //       // // layers.uiLayer.text("THE ANEMONE", textX, anchory);
       //   });
         
       //   return;

@@ -47,6 +47,10 @@ export const mainSketch = (p) => {
     p.shared.assets.storyAssets['bgStormTrans'] = p.loadImage('./assets/created/raw/storm_bg_trans_scaled.png');
     p.shared.assets.audio = {};
     p.shared.assets.audio['story1'] = p.loadSound('./assets/created/anemone_script1.mp3');
+    p.shared.assets.audio['story2'] = p.loadSound('./assets/created/anemone_script2.mp3');
+    p.shared.assets.audio['noise_wave'] = p.loadSound('./assets/created/noise_wave.mp3');
+    p.shared.assets.audio['ohno'] = p.loadSound('./assets/created/ohno.mp3');
+    
     // p.shared.assets.logo = p.loadImage('./assets/created/logo1.png');
   };
 
@@ -90,6 +94,12 @@ export const mainSketch = (p) => {
     registerSystemEvents(p);
     registerControls(p);
     p.shared.audio.register('story1', p.shared.assets.audio['story1']);
+    p.shared.audio.register('story2', p.shared.assets.audio['story2']);
+    p.shared.audio.register('noise_wave', p.shared.assets.audio['noise_wave']);
+    p.shared.audio.register('ohno', p.shared.assets.audio['ohno']);
+    p.userStartAudio();
+    p.shared.audio.warmAll();
+    
     // Register scenes
     // this.p.shared.levels.level2;
     p.shared.sceneManager.register('menu', MenuScene);
@@ -106,7 +116,7 @@ export const mainSketch = (p) => {
     p.shared.sceneManager.register('level6', Level1Scene, { level: p.shared.levels.level6, nextScene: 'level7', chapter: 'chapter2' });
     p.shared.sceneManager.register('level7', Level1Scene, { level: p.shared.levels.level7, nextScene: 'menu', chapter: 'chapter3' });
 
-    p.shared.sceneManager.register('endStory', ArtSceneTwo);
+    p.shared.sceneManager.register('endStory', ArtSceneTwo); // this is the last scene, needs audio
     p.shared.sceneManager.continue = true;
 
     // p.shared.sceneManager.register('gameover', GameOverScene);    // Start with menu

@@ -103,6 +103,7 @@ export class Player extends BaseEntity {
         super.reset(spawn);
         this.ready = false;
         this.health = 100;
+        this.skipPhysicsFrames = 1;
     }
 
     onHazard(hazard) {
@@ -145,6 +146,10 @@ export class Player extends BaseEntity {
     applyForces(dt) {
         if (!this.ready) return;
         if (this.health <= 0) return;
+        if (this.skipPhysicsFrames > 0) {
+            this.skipPhysicsFrames--;
+            return;
+        }
 
         if (this.moving.sink) {
             this.baseBuoyancy = this.sinkancy;

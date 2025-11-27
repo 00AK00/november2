@@ -62,6 +62,53 @@ export class BaseScene {
       this.computeMapTransform(this.levelData, { paddingPx: this.padding });
       player.setScene(this);
       this.levelData = generateCurrents(this.levelData, this.p);
+
+// i want to do a kernel based blur of currents here, only for levelDefinitionsCurrents, and only impacting leveldefinitino currents also
+// should be still weightabl to towards the original value, but make some conisderation to the 8 surrounding cells, and their dx dy values averaged
+// like a little bit of a smoothing filter I guess with a 3x3 kernal, but averaging only based on the number of curretns in the 3x3 that are level defining... make sense?
+      // --- 3x3 kernel smoothing for levelDefinitionCurrent only ---
+      const smoothed = [];
+      const lookup = new Map();
+      for (const c of this.levelData.currents) {
+        lookup.set(`${c.x},${c.y}`, c);
+      }
+
+      for (const c of this.levelData.currents) {
+        if (!c.levelDefinitionCurrent) {
+          smoothed.push({ ...c });
+          continue;
+        }
+
+        let sumDX = 0;
+        let sumDY = 0;
+        let count = 0;
+
+        for (let oy = -1; oy <= 1; oy++) {
+          for (let ox = -1; ox <= 1; ox++) {
+            const nx = c.x + ox;
+            const ny = c.y + oy;
+            const neighbor = lookup.get(`${nx},${ny}`);
+
+            if (neighbor && neighbor.levelDefinitionCurrent) {
+              sumDX += neighbor.dx;
+              sumDY += neighbor.dy;
+              count++;
+            }
+          }
+        }
+
+        const avgDX = count > 0 ? sumDX / count : c.dx;
+        const avgDY = count > 0 ? sumDY / count : c.dy;
+
+        smoothed.push({
+          ...c,
+          dx: (c.dx * 0.6) + (avgDX * 0.4),
+          dy: (c.dy * 0.6) + (avgDY * 0.4)
+        });
+      }
+
+      this.levelData.currents = smoothed;
+
       this.drawCurrentsUniformTexture();
       const spawnWorld = {
         x: this.levelData.spawn.x + 0.5,
@@ -97,7 +144,7 @@ export class BaseScene {
             break;
 
           case 'pathFollower':
-            let newLegend = entity.ch + "_pathfollower";
+            let newLegend = entity.legend + "_pathfollower";
             let res = this.getEntity(newLegend);
             if (res === null) {
               res = new PathFollower(this.p);
@@ -182,6 +229,7 @@ export class BaseScene {
   }
 
   positionChecking(player) {
+    if (this.gameState !== PLAYING) return;
     if (player.worldPos.x - this.levelGoal.x < 1.0 && player.worldPos.x - this.levelGoal.x > -1.0 &&
       player.worldPos.y - this.levelGoal.y < 1.0 && player.worldPos.y - this.levelGoal.y > -1.0) {
       this.Debug.log('level', 'Level complete!');
@@ -206,10 +254,14 @@ export class BaseScene {
 
     if (newState === COMPLETED && isUpdate) {
       this.transitionUntil = this.p.millis() + 1500;
+      this.Debug.log('level', 'Level completed, transitioning to next scene:', this.nextScene);
+      this.p.shared.audio.play('noise_wave');
     }
 
     if (newState === FAILED && isUpdate) {
+      this.Debug.log('level', 'Level failed, restarting level.');
       this.transitionUntil = this.p.millis() + 1000;
+      this.p.shared.audio.play('ohno');
     }
   }
 
@@ -403,14 +455,14 @@ export class BaseScene {
     // this.renderer.layers.uiLayer.fill(255, 0, 0);
     // this.renderer.layers.uiLayer.circle(this.p.correctedMouseX, this.p.correctedMouseY, 25); // DEBUG: show mouse position
 
-    if (this.renderer.layerDirty.uiLayer) {
-      const uiLayer = this.renderer.layers.uiLayer;
-      const shaderLayer = this.renderer.layers.entitiesLayer;
-      for (const el of this.uiElements) {
-        el.draw(uiLayer, shaderLayer);
-        // this.Debug.log('level', 'Drawing UI element:', el);
-      }
+    // if (this.renderer.layerDirty.uiLayer) {
+    const uiLayer = this.renderer.layers.uiLayer;
+    const shaderLayer = this.renderer.layers.entitiesLayer;
+    for (const el of this.uiElements) {
+      el.draw(uiLayer, shaderLayer);
+      // this.Debug.log('level', 'Drawing UI element:', el);
     }
+    // }
   }
 
   cleanup() {
@@ -421,7 +473,7 @@ export class BaseScene {
     this.lastSceneChangeFrameNumber = 0;
     for (const entity of this.entities) {
       entity.cleanup();
-      this.Debug.log('level', 'Cleaned up entity:', entity);
+      // this.Debug.log('level', 'Cleaned up entity:', entity);
     }
     this.entities.length = 0;
     this.uiElements.length = 0;

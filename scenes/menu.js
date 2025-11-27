@@ -159,11 +159,12 @@ export class MenuScene extends BaseScene {
         });
     }
 
-    // onKeyPressed(key, keyCode) {
-    //     super.onKeyPressed(key, keyCode);
-    //     this.p.shared.sceneManager.change('level1');
-    //     // this.p.shared.sceneManager.change('test');
-    // }
+    onKeyPressed(key, keyCode) {
+        super.onKeyPressed(key, keyCode);
+        // this.p.shared.sceneManager.change('level1');
+        // this.p.shared.sceneManager.change('test');
+        // this.p.shared.sceneManager.change('endStory');
+    }
 
     update() {
         const [r, player, dt] = super.update();

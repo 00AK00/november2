@@ -3,7 +3,7 @@ import { ArtSceneOne } from './story1.js';
 export class ArtSceneTwo extends ArtSceneOne {
     constructor(p) {
         super(p);
-        this.audioTrack = 'story2'; // TODO - "I Saved You!""
+        this.audioTrack = 'story2';
     }
 
     storyLogic(elapsedSec, entitiesLayer, textureLayer) {

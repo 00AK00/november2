@@ -154,10 +154,22 @@ export class PathFollower extends BaseEntity {
     checkCollisionWithPlayer(player) {
         const box = this.getAABB?.();
         if (!box) return false;
-
+        if (player.physicsParticles && player.physicsParticles.length > 0) {
+            for (const p of player.physicsParticles) {
+                const px = p.pos.x;
+                const py = p.pos.y;
+                if (
+                    px >= box.x &&
+                    px <= box.x + box.w &&
+                    py >= box.y &&
+                    py <= box.y + box.h
+                ) {
+                    return true;
+                }
+            }
+        }
         const px = player.worldPos.x;
         const py = player.worldPos.y;
-
         return (
             px >= box.x &&
             px <= box.x + box.w &&
@@ -168,7 +180,7 @@ export class PathFollower extends BaseEntity {
 
     // simple AABB for hit detection, tile-sized
     getAABB() {
-        const half = this.size * 0.5;
+        const half = this.size/2;
         return {
             x: this.worldPos.x - half,
             y: this.worldPos.y - half,
@@ -190,6 +202,11 @@ export class PathFollower extends BaseEntity {
         texture.noStroke();
         texture.fill(this.color);
         texture.circle(x, y, dims);
+
+        // if (this.p.frameCount % 30 === 0) {
+        //     console.log("Drawing PathFollower at:", this.worldPos, x, y);
+        //     console.log(this.legend);
+        // }
 
 
         // for (let point of this.path) {
