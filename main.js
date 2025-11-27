@@ -14,6 +14,7 @@ import {applyChromaMapWithDisable} from './core/utils.js';
 
 import { MenuScene } from './scenes/menu.js';
 import { ArtSceneOne } from './scenes/story1.js';
+import { ArtSceneTwo } from './scenes/story2.js';
 import { ChapterScene } from './scenes/chapter.js';
 import { Level1Scene } from './scenes/level1.js';
 import { GameOverScene } from './scenes/gameover.js';
@@ -104,6 +105,8 @@ export const mainSketch = (p) => {
     p.shared.sceneManager.register('level5', Level1Scene, { level: p.shared.levels.level5, nextScene: 'level6', chapter: 'chapter2' });
     p.shared.sceneManager.register('level6', Level1Scene, { level: p.shared.levels.level6, nextScene: 'level7', chapter: 'chapter2' });
     p.shared.sceneManager.register('level7', Level1Scene, { level: p.shared.levels.level7, nextScene: 'menu', chapter: 'chapter3' });
+
+    p.shared.sceneManager.register('endStory', ArtSceneTwo);
     p.shared.sceneManager.continue = true;
 
     // p.shared.sceneManager.register('gameover', GameOverScene);    // Start with menu

@@ -8,7 +8,7 @@ const FROND_HEIGHT = 0.38;
 const SPRING_K = 2.0;
 const SPRING_DAMP = 1.0;
 
-const FROND_MASS = 10;
+const FROND_MASS = 2;
 const STEM_MASS = 4;
 const ROOT_MASS = 12;
 
@@ -21,11 +21,13 @@ export class Friend extends BaseEntity {
         // this.color = p.color('#40E0D0');
         this.color = p.color('#E0D040');
 
-        this.speed = 40;
-        this.speed = p.shared.settings.playerSpeed || 40;
+        this.speed = 20;
+        this.speed = p.shared.settings.playerSpeed/2 || 20;
         this.sinkancy = p.shared.settings.playerSinkancy || 30;
         this.buoyancy = p.shared.settings.playerBuoyancy || -12.5;
         this.baseBuoyancy = p.shared.settings.playerBuoyancy || -12.5;
+
+        this.away = {x: this.speed, y: this.speed};
 
         this.moving = {
             moveLeft: false,
@@ -143,6 +145,20 @@ export class Friend extends BaseEntity {
         mp.pos.x = this.worldPos.x;
         mp.pos.y = this.worldPos.y;
         this.pxSize = this.size * this.scene.mapTransform.tileSizePx;
+    }
+
+    moveLongWays () {
+        let dx = 0;
+        let dy = 0;
+        const { x, y } = this.scene.worldToScreen(this.worldPos);
+        if (x < this.p.width / 2) dx = this.speed;
+        if (x > this.p.width / 2) dx = -this.speed;
+        if (y < this.p.height / 2) dy = this.speed;
+        if (y > this.p.height / 2) dy = -this.speed;
+
+        this.worldPos.x += dx;
+        this.worldPos.y += dy;
+        return {x: dx/this.speed, y: dy/this.speed};
     }
 
     draw(layer, texture) {

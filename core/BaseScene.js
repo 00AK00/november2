@@ -8,7 +8,7 @@ import { MyButton } from '../components/myButton.js';
 import { Grass } from '../entities/grass.js';
 import { Friend } from '../entities/friend.js';
 import { Spikes } from '../entities/spikes.js';
-import {PathFollower} from "../entities/pathFollower.js";
+import { PathFollower } from "../entities/pathFollower.js";
 
 const PLAYING = 0;
 const COMPLETED = 1;
@@ -35,6 +35,9 @@ export class BaseScene {
     this.useTextureLayer = 1.0;
     this.gameState = PLAYING;
     this.friend = null;
+    this.transitionTimer = 0;
+    this.desaturateAmount = 0;
+
   }
 
   init() {
@@ -101,7 +104,7 @@ export class BaseScene {
               this.registerEntity(res);
             }
             res.legend = newLegend;
-            res.addToPath({x: entity.x, y: entity.y});
+            res.addToPath({ x: entity.x, y: entity.y });
             break;
         }
       }
@@ -174,6 +177,7 @@ export class BaseScene {
   }
 
   sortEntitiesToRenderOrder() {
+    //todo
 
   }
 
@@ -181,7 +185,7 @@ export class BaseScene {
     if (player.worldPos.x - this.levelGoal.x < 1.0 && player.worldPos.x - this.levelGoal.x > -1.0 &&
       player.worldPos.y - this.levelGoal.y < 1.0 && player.worldPos.y - this.levelGoal.y > -1.0) {
       this.Debug.log('level', 'Level complete!');
-      this.gameState = COMPLETED;
+      this.updateGameState(COMPLETED);
     }
     for (const entity of this.entities) {
       if (!entity.hazard) continue;
@@ -190,9 +194,22 @@ export class BaseScene {
         console.warn('⚠️ Player hit hazard:', entity);
         player.onHazard?.(entity);
         if (player.health <= 0) {
-          this.gameState = FAILED;
+          this.updateGameState(FAILED);
         }
       }
+    }
+  }
+
+  updateGameState(newState) {
+    let isUpdate = this.gameState != newState;
+    this.gameState = newState;
+
+    if (newState === COMPLETED && isUpdate) {
+      this.transitionUntil = this.p.millis() + 1500;
+    }
+
+    if (newState === FAILED && isUpdate) {
+      this.transitionUntil = this.p.millis() + 1000;
     }
   }
 
@@ -208,19 +225,32 @@ export class BaseScene {
 
     switch (this.gameState) {
       case PLAYING:
-        this.updateGame(r, player, dt);
         break;
       case COMPLETED:
-        if (this.nextScene) {
-          this.p.shared.sceneManager.change(this.nextScene);
-        } else {
-          this.Debug.log('level', 'No next scene defined.');
+        player.ready = false;
+        let dir = this.friend.moveLongWays();
+        const r = Math.floor(this.p.map(dir.x, -1, 1, 0, 255));
+        const g = Math.floor(this.p.map(dir.y, -1, 1, 0, 255));
+        const b = 128; // neutral
+
+        this.renderer.layers.currentTexture.background(r, g, b, 50);
+
+        if (this.p.millis() >= this.transitionUntil) {
+          if (this.nextScene) {
+            this.p.shared.sceneManager.change(this.nextScene);
+          } else {
+            this.Debug.log('level', 'No next scene defined.');
+          }
         }
-        this.Debug.log('level', 'No next scene defined.');
         break;
+
       case FAILED:
-        this.cleanup();
-        this.init();
+        player.ready = false;
+        this.desaturateAmount += 1;
+        if (this.p.millis() >= this.transitionUntil) {
+          this.cleanup();
+          this.init();
+        }
         break;
     }
 
@@ -401,6 +431,7 @@ export class BaseScene {
     this.physicsSolver = null;
     this.levelData = null;
     this.Debug.log('level', `🧹 ${this.constructor.name} cleanup - done`);
+    this.desaturateAmount = 0;
   }
 
   // ---- Helpers -------------------------------------------------
