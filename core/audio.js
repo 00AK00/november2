@@ -50,8 +50,11 @@ export function createAudioManager(p) {
                 0,
                 duration,
                 () => {
+                    s.pause();
                     s.setVolume(0);
-                    s.stop();
+                    setTimeout(() => {
+                        try { s.stop(); } catch (e) {}
+                    }, 20);
                     this.cancelTweensFor(s, 'setVolume');
                 }
             );
@@ -152,11 +155,14 @@ export function createAudioManager(p) {
 
         stop(name, opts = {}) {
             const s = tracks[name];
-            // if (s && s.isPlaying()) {
-            //     s.stop();
-            // }
             if (s && s.isPlaying()) {
-                p.shared.tween(s, 'setVolume', 0, 400, () => s.stop());
+                p.shared.tween(s, 'setVolume', 0, 400, () => {
+                    s.pause();
+                    s.setVolume(0);
+                    setTimeout(() => {
+                        try { s.stop(); } catch (e) {}
+                    }, 20);
+                });
             }
         },
 
