@@ -9,7 +9,7 @@ function systemEventDeviceTurned(p) {
   }, p.shared.settings.debounceTime);
 }
 
-function resizeHandler(p, cascade=true) {
+function resizeHandler(p, cascade = true) {
 
   const isPortrait = window.innerHeight > window.innerWidth;
   const screenW = window.innerWidth;

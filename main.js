@@ -19,7 +19,6 @@ import { ChapterScene } from './scenes/chapter.js';
 import { Level1Scene } from './scenes/level1.js';
 import { GameOverScene } from './scenes/gameover.js';
 import { JsonInputScene } from './scenes/jsonInput.js';
-import { LevelPainterScene } from './scenes/levelPainter.js';
 
 
 import { Player } from './entities/player.js';
@@ -121,7 +120,6 @@ export const mainSketch = (p) => {
     p.shared.sceneManager.register('endStory', ArtSceneTwo); // this is the last scene, needs audio
 
     p.shared.sceneManager.register('jsonInput', JsonInputScene);
-    p.shared.sceneManager.register('levelPainter', LevelPainterScene);
 
 
     p.shared.sceneManager.continue = true;
@@ -131,6 +129,8 @@ export const mainSketch = (p) => {
 
     // final canvas initialization
     initializeCanvasPostSetup(p);
+    document.getElementById('landing_fg').style.opacity = '0';
+    p.shared.mainCanvas.class('ready');
   };
 
   p.draw = () => {

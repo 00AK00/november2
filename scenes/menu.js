@@ -33,7 +33,7 @@ export class MenuScene extends BaseScene {
         const uiLayer = this.renderer.layers.uiLayer;
         const baseWidth = this.renderer.layers.uiLayer.width;
         const baseHeight = this.renderer.layers.uiLayer.height;
-        const baseSize = Math.min(baseHeight, baseWidth)/8;
+        const baseSize = Math.min(baseHeight, baseWidth) / 8;
         this.title.push(new WobbleText(
             this.p,
             font,
@@ -157,14 +157,38 @@ export class MenuScene extends BaseScene {
 
             this.registerUI(btn);
         });
+
+        // level edit button
+        if (true) {
+            const lastElement = this.uiElements[this.uiElements.length - 1];
+            const x = lastElement.x + lastElement.w - lastElement.h;
+            const y = lastElement.y + lastElement.h * 2;
+            const w = lastElement.h;
+            const h = lastElement.h;
+            const label = "/";
+            const btn = new MyButton(
+                x,
+                y,
+                w,
+                h,
+                label,
+                layer,
+                () => this.p.shared.sceneManager.change('jsonInput'),
+                this.p
+            );
+            // btn.backgroundColor = this.p.shared.chroma.enemy;
+
+            this.registerUI(btn);
+
+        }
+
+
     }
 
     onKeyPressed(key, keyCode) {
         super.onKeyPressed(key, keyCode);
         // this.p.shared.sceneManager.change('jsonInput');
 
-        this.p.shared.sceneManager.change('levelPainter');
-        
         // this.p.shared.sceneManager.change('level1');
         // this.p.shared.sceneManager.change('test');
         // this.p.shared.sceneManager.change('endStory');
@@ -202,7 +226,7 @@ export class MenuScene extends BaseScene {
             layers.uiLayer.stroke(0);
             layers.uiLayer.textAlign(layers.uiLayer.CENTER, layers.uiLayer.CENTER);
 
-            let textSize = layers.uiLayer.width/10;
+            let textSize = layers.uiLayer.width / 10;
             layers.entitiesLayer.textSize(textSize);
             layers.uiLayer.textSize(textSize);
 
@@ -214,7 +238,7 @@ export class MenuScene extends BaseScene {
 
             anchory += layers.uiLayer.height / 8;
 
-            textSize = layers.uiLayer.width/15;
+            textSize = layers.uiLayer.width / 15;
             layers.entitiesLayer.textSize(textSize);
             layers.uiLayer.textSize(textSize);
 
@@ -222,10 +246,10 @@ export class MenuScene extends BaseScene {
             layers.uiLayer.text("OF MY", textX, anchory);
             anchory += layers.uiLayer.height / 8;
 
-            textSize = layers.uiLayer.width/7;
+            textSize = layers.uiLayer.width / 7;
             layers.entitiesLayer.textSize(textSize);
             layers.uiLayer.textSize(textSize);
-            
+
             layers.entitiesLayer.text("ANEMONE", textX, anchory);
             layers.uiLayer.text("ANEMONE", textX, anchory);
 

@@ -10,9 +10,11 @@ export class MyButton {
         this.fontSize = 0.85 * Math.min(this.w, this.h);
         this.p = p;
         this.backgroundColor = this.p.shared.chroma.terrain;
-        this.fontColor = p.color(0);
         this.useOrganicShape = true;
         this.organicShape = [];
+        this.uiLayerFill = p.color(255);
+        this.uiLayerStroke = p.color(0);
+        this.outlineOnUILayer = true;
 
     }
 
@@ -107,8 +109,7 @@ export class MyButton {
         this.organicShape = pts;
     }
 
-    draw(layer, shaderLayer) {
-        // console.log(shaderLayer);
+    drawShadedComponent(shaderLayer) {
         if (this.useOrganicShape) {
             if (this.organicShape.length === 0) {
                 this.generateOrganicShape();
@@ -128,9 +129,33 @@ export class MyButton {
             shaderLayer.rect(this.x, this.y, this.w, this.h);
         }
 
+    }
 
-        layer.fill(255);
-        layer.stroke(0);
+    drawUILayerComponent(layer) {
+        if (this.outlineOnUILayer) {
+            layer.stroke(this.uiLayerStroke);
+            layer.noFill();
+            layer.strokeWeight(2);
+
+            if (this.useOrganicShape) {
+                if (this.organicShape.length === 0) {
+                    this.generateOrganicShape();
+                }
+                layer.beginShape();
+                for (const pt of this.organicShape) {
+                    layer.vertex(pt.x, pt.y);
+                }
+                layer.endShape(layer.CLOSE);
+            } else {
+                layer.rectMode(layer.CORNER);
+                layer.rect(this.x, this.y, this.w, this.h);
+            }
+
+        }
+
+
+        layer.fill(this.uiLayerFill);
+        layer.stroke(this.uiLayerStroke);
         layer.strokeWeight(2);
         layer.textAlign(layer.CENTER, layer.CENTER);
         layer.textSize(this.fontSize);
@@ -139,6 +164,15 @@ export class MyButton {
             this.x + this.w / 2,
             this.y + this.h / 2 - this.fontSize * 0.125
         );
+    }
+
+
+    draw(layer, shaderLayer) {
+        // if (this.p.frameCount <= 30) {
+        //     return;
+        // }
+        this.drawShadedComponent(shaderLayer);
+        this.drawUILayerComponent(layer);
     }
 
     onResize(layer) {

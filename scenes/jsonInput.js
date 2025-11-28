@@ -28,12 +28,11 @@ export class JsonInputScene extends BaseScene {
         this.textArea.style('top', '20%');
         this.textArea.style('width', '80%');
         this.textArea.style('height', '50%');
-        this.textArea.style('font-size', '16px');
         this.textArea.style('padding', '12px');
         this.textArea.style('border', '2px solid #444');
         this.textArea.style('outline', 'none');
         this.textArea.style('resize', 'none');
-        this.textArea.value('');
+        this.textArea.value(JSON.stringify(this.p.shared.levels.demo, null, 2));
 
         // ---------- Submit Button ----------
         const btnSubmit = new MyButton(
@@ -41,7 +40,7 @@ export class JsonInputScene extends BaseScene {
             uiLayer.height * 0.8,
             uiLayer.width * 0.25,
             uiLayer.height * 0.08,
-            "Submit",
+            "Play",
             uiLayer,
             () => {
                 const text = this.textArea.value();

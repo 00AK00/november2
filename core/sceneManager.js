@@ -54,10 +54,17 @@ export function createSceneManager(p) {
       //       // p.text("ROTATE PLZ", textX, anchory);
       //       // // layers.uiLayer.text("THE ANEMONE", textX, anchory);
       //   });
-        
+
       //   return;
       // }
+
+      // if (p.frameCount <= 20) {
+      //   p.shared.renderer.drawScene(() => {
+      //     p.background(p.shared.chroma.background);
+      //   });
+      // } else {
       if (this.current?.draw) this.current.draw(p);
+      // }
     },
   };
 
