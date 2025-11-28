@@ -1,5 +1,5 @@
 import { BaseEntity } from '../core/BaseEntity.js';
-import {generateFish} from './fishGenerator.js';
+import { generateFish } from './fishGenerator.js';
 
 const BODY_RADIUS = 0.4;
 const BODY_MASS = 2;
@@ -17,6 +17,7 @@ export class PathFollower extends BaseEntity {
         this.color = p.shared.chroma.enemy;
         this.visible = true;
         this.hazard = opts.hazard;
+        this.playerAngle = 0;
         // console.log(this.hazard, opts);
 
         this.mainPhysicsParticle = this.createPhysicsParticle(
@@ -53,7 +54,7 @@ export class PathFollower extends BaseEntity {
             generateFish(p, this.shapeTexture, this.colorTexture, p.shared.chroma.ambient, p.shared.chroma.ambient);
         }
 
-        
+
     }
 
     addToPath(point) {
@@ -201,7 +202,7 @@ export class PathFollower extends BaseEntity {
 
     // simple AABB for hit detection, tile-sized
     getAABB() {
-        const half = this.size/2;
+        const half = this.size / 2;
         return {
             x: this.worldPos.x - half,
             y: this.worldPos.y - half,
@@ -215,22 +216,33 @@ export class PathFollower extends BaseEntity {
         const { x, y } = this.scene.worldToScreen(this.worldPos);
         // const { x, y } = this.scene.worldToScreen({x: 10, y: 1});
 
+        const player = this.p.shared.player;
+        if (player) {
+            const playerDx = player.worldPos.x - this.worldPos.x;
+            const playerDy = player.worldPos.y - this.worldPos.y;
+            const playerDist = Math.sqrt(playerDx * playerDx + playerDy * playerDy);
+            console.log("Player distance:", playerDist.toFixed(2));
+            if (playerDist > 1.0) {
+                this.playerAngle = Math.atan2(playerDy, playerDx);
+            }
+        }
+
         const dims = Math.floor(this.pxSize);
-        layer.noStroke();
-        layer.fill(this.color);
-        // layer.circle(x, y, dims);
-        layer.image(this.shapeTexture, x, y, dims, dims);
 
-        texture.noStroke();
-        texture.fill(this.color);
-        texture.image(this.colorTexture, x, y, dims, dims);
+        layer.push();
+        layer.translate(x, y);
+        layer.rotate(this.playerAngle);
+        layer.image(this.shapeTexture, 0, 0, dims, dims);
+        // layer.translate(-x, -y);
+        layer.pop();
 
-        // if (this.p.frameCount % 30 === 0) {
-        //     console.log("Drawing PathFollower at:", this.worldPos, x, y);
-        //     console.log(this.legend);
-        // }
-
-
+        texture.push();
+        texture.translate(x, y);
+        texture.rotate(this.playerAngle);
+        texture.image(this.colorTexture, 0, 0, dims, dims);
+        // texture.translate(-x, -y);
+        texture.pop();
+   
         // for (let point of this.path) {
         //     const { x, y } = this.scene.worldToScreen(point);
         //     const dims = Math.floor(this.pxSize * 6);

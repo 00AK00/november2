@@ -308,15 +308,16 @@ let sketch = function (p) {
 
 
         for (let i = 0; i < 2000; i++) {
-            let x = p.random(w);
-            let y = p.random(h);
-            let d = p.dist(x, y, w * 0.45, h * 0.5);
+        let x = p.random(w);
+        let y = p.random(h);
+        let d = p.dist(x, y, w * 0.45, h * 0.5);
 
-            if (d < bodyLength * 0.8) {
-                textureGraphic.fill(baseHue, 55 + p.random(-10, 10), 40 + p.random(-10, 10), 0.7);
-                textureGraphic.circle(x, y, p.random(minCircleSize, maxCircleSize * 2));
-            }
+        if (d < bodyLength * 0.8) {
+            const heightRatio = y / h;
+            textureGraphic.fill(baseHue, 55 + p.random(-10, 10), 40 * heightRatio + 40 + p.random(-10, 10), 0.7);
+            textureGraphic.circle(x, y, p.random(minCircleSize, maxCircleSize * 2));
         }
+    }
 
 
 

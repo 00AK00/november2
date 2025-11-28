@@ -270,7 +270,8 @@ export function generateFish(p, shapeGraphic, textureGraphic, maskColor, alignme
         let d = p.dist(x, y, w * 0.45, h * 0.5);
 
         if (d < bodyLength * 0.8) {
-            textureGraphic.fill(baseHue, 55 + p.random(-10, 10), 40 + p.random(-10, 10), 0.7);
+            const heightRatio = y / h;
+            textureGraphic.fill(baseHue, 55 + p.random(-10, 10), 40 * heightRatio + 40 + p.random(-10, 10), 0.7);
             textureGraphic.circle(x, y, p.random(minCircleSize, maxCircleSize * 2));
         }
     }
