@@ -179,39 +179,40 @@ export function generateFish(p, shapeGraphic, textureGraphic, maskColor, alignme
     drawTail(shapeGraphic, p, cx, cy, bodyLength, topH, botH, tailWidth, tailHeight, verticalSkew);
 
     // ----------------------------------------------------
-    // FINS (subtle, contained, alignmentColor)
+    // FINS (larger, contained, alignmentColor)
     // ----------------------------------------------------
+    const finType = p.floor(p.random(0, 3));
     shapeGraphic.fill(alignmentColor);
     shapeGraphic.noStroke();
 
-    const finType = p.floor(p.random(0, 3));
-    // 0 = top only, 1 = bottom only, 2 = both, 3 = none
-    // console.log("finType:", finType);
+    // fin prominence multiplier (1.0–3.0 works well)
+    const finScale = 1.75;
 
-    // local helpers to keep fins “inside” the body shape
+    // local helpers to keep fins inside the silhouette curvature
     function finBaseX(t) {
-        // range t in [0..1], mapping along spine from tail→head
+        // spine from tail → head
         return p.lerp(cx - bodyLength * 0.3, cx + bodyLength * 0.2, t);
     }
 
     function finTopY(t) {
-        return cy - (topH * (0.5 - 0.3 * t)) + verticalSkew * h;
+        // decrease confinement slightly for bigger fins
+        return cy - (topH * (0.5 - 0.18 * t)) + verticalSkew * h;
     }
 
     function finBotY(t) {
-        return cy + (botH * (0.5 - 0.3 * t)) + verticalSkew * h;
+        return cy + (botH * (0.5 - 0.18 * t)) + verticalSkew * h;
     }
 
-    // asymmetric fin “spread” factor per species
-    const finSpread = 0.1 + 0.25 * (1 - species * 0.15);
+    // increased outward curvature
+    const finSpread = (0.1 + 0.25 * (1 - species * 0.15)) * finScale;
 
     // TOP FIN
     if (finType === 0 || finType === 2) {
         shapeGraphic.beginShape();
-        // const t0 = p.random(0.15, 0.35);       // start of fin along spine
-        // const t1 = t0 + p.random(0.15, 0.25);  // end of fin along spine
-        const t0 = p.random(0.10, 0.30);       // start earlier on the body
-        const t1 = t0 + p.random(0.25, 0.40);  // extend further forward
+
+        // extended fin length along body
+        const t0 = p.random(0.05, 0.18);
+        const t1 = t0 + p.random(0.55, 0.85);
 
         const x0 = finBaseX(t0);
         const x1 = finBaseX(t1);
@@ -219,9 +220,9 @@ export function generateFish(p, shapeGraphic, textureGraphic, maskColor, alignme
         const y0 = finTopY(t0);
         const y1 = finTopY(t1);
 
-        // bezier outward “ribbon” direction
+        // bigger vertical reach
         const ctrlX = p.lerp(x0, x1, 0.5);
-        const ctrlY = p.min(y0, y1) - topFinHeight * finSpread;
+        const ctrlY = p.min(y0, y1) - topFinHeight * finSpread * finScale;
 
         shapeGraphic.vertex(x0, y0);
         shapeGraphic.bezierVertex(ctrlX, ctrlY, ctrlX, ctrlY, x1, y1);
@@ -231,10 +232,10 @@ export function generateFish(p, shapeGraphic, textureGraphic, maskColor, alignme
     // BOTTOM FIN
     if (finType === 1 || finType === 2) {
         shapeGraphic.beginShape();
-        // const t0 = p.random(0.15, 0.35);
-        // const t1 = t0 + p.random(0.15, 0.25);
-        const t0 = p.random(0.05, 0.25);
-        const t1 = t0 + p.random(0.35, 0.55);
+
+        // extended fin length along body
+        const t0 = p.random(0.03, 0.15);
+        const t1 = t0 + p.random(0.55, 0.90);
 
         const x0 = finBaseX(t0);
         const x1 = finBaseX(t1);
@@ -242,8 +243,9 @@ export function generateFish(p, shapeGraphic, textureGraphic, maskColor, alignme
         const y0 = finBotY(t0);
         const y1 = finBotY(t1);
 
+        // bigger vertical reach
         const ctrlX = p.lerp(x0, x1, 0.5);
-        const ctrlY = p.max(y0, y1) + bottomFinHeight * finSpread;
+        const ctrlY = p.max(y0, y1) + bottomFinHeight * finSpread * finScale;
 
         shapeGraphic.vertex(x0, y0);
         shapeGraphic.bezierVertex(ctrlX, ctrlY, ctrlX, ctrlY, x1, y1);
@@ -256,7 +258,7 @@ export function generateFish(p, shapeGraphic, textureGraphic, maskColor, alignme
     textureGraphic.colorMode(p.HSL);
 
     textureGraphic.fill(firstBaseHue, 60, 50);
-    textureGraphic.circle(w * 0.45, h * 0.5, bodyLength * 2);
+    textureGraphic.circle(w * 0.5, h * 0.5, w);
 
     const minCircleSize = textureGraphic.width * 0.0025;
     const maxCircleSize = textureGraphic.width * 0.015;
@@ -285,7 +287,7 @@ export function generateFish(p, shapeGraphic, textureGraphic, maskColor, alignme
         // textureGraphic.line(sx, h * 0.5 - bodyHeight * 0.4, sx, h * 0.5 + bodyHeight * 0.4);
         for (let y = maxCircleSize; y < h; y += p.random(minCircleSize, maxCircleSize)) {
             let x = sx + (p.random() * stripeWidth * maxCircleSize);
-            let d = p.dist(x, y, w * 0.45, h * 0.5);
+            let d = p.dist(x, y, w * 0.5, h * 0.5);
             if (d < bodyLength * 0.8) {
                 textureGraphic.fill(accentHue, 55 + p.random(-10, 10), 40 + p.random(-10, 10), 0.7);
 
