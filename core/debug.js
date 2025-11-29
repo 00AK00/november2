@@ -5,10 +5,10 @@ export const Debug = {
   // Optional subsystem toggles
   flags: {
     controls: false,
-    renderer: true,
+    renderer: false,
     system: false,
     player: false,
-    level: true,
+    level: false,
   },
 
   log(subsystem, ...args) {
