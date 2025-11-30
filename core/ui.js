@@ -17,7 +17,7 @@ export function createUI(p) {
       // const hp = player ? player.health : '-';
 
       //WEBGL canvas mode has (0,0) in center
-      layer.text(`FPS: ${fps}`, 10, 10);
+      // layer.text(`FPS: ${fps}`, 10, 10);
       // layer.text(`HP: ${hp}`, 10, 10 + layer.textSize());
     }
   };

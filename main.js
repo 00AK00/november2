@@ -161,7 +161,7 @@ export const mainSketch = (p) => {
     p.shared.sceneManager.register('level1', ArtSceneOne);
     p.shared.sceneManager.register('chapter1', ChapterScene, { levels: [1, 2, 3] });
     p.shared.sceneManager.register('chapter2', ChapterScene, { levels: [4, 5, 6] });
-    p.shared.sceneManager.register('chapter3', ChapterScene, { levels: [7, 8, 9, 10] });
+    p.shared.sceneManager.register('chapter3', ChapterScene, { levels: [7, 8, 9] });
 
     // p.shared.sceneManager.register('level1', TutorialScene, { level: p.shared.levels.level1, nextScene: 'level2', chapter: 'chapter1' });
     p.shared.sceneManager.register('level1level', TutorialScene, { level: p.shared.levels.level1, nextScene: 'level2', chapter: 'chapter1' });
@@ -170,7 +170,9 @@ export const mainSketch = (p) => {
     p.shared.sceneManager.register('level4', Level1Scene, { level: p.shared.levels.level4, nextScene: 'level5', chapter: 'chapter2' });
     p.shared.sceneManager.register('level5', Level1Scene, { level: p.shared.levels.level5, nextScene: 'level6', chapter: 'chapter2' });
     p.shared.sceneManager.register('level6', Level1Scene, { level: p.shared.levels.level6, nextScene: 'level7', chapter: 'chapter2' });
-    p.shared.sceneManager.register('level7', Level1Scene, { level: p.shared.levels.level7, nextScene: 'menu', chapter: 'chapter3' });
+    p.shared.sceneManager.register('level7', Level1Scene, { level: p.shared.levels.level7, nextScene: 'level8', chapter: 'chapter3' });
+    p.shared.sceneManager.register('level8', Level1Scene, { level: p.shared.levels.level8, nextScene: 'level9', chapter: 'chapter3' });
+    p.shared.sceneManager.register('level9', Level1Scene, { level: p.shared.levels.level9, nextScene: 'endStory', chapter: 'chapter3' });
 
     p.shared.sceneManager.register('endStory', ArtSceneTwo); // this is the last scene, needs audio
 

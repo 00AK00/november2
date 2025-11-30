@@ -37,12 +37,16 @@ export class Level1Scene extends BaseScene {
         r.markDirty('entitiesLayer');
     }
 
+    drawUICallback(uiLayer, entitiesLayer) {
+        // noop
+    }
+
     draw() {
         const r = this.p.shared.renderer;
         const ui = this.p.shared.ui;
         const player = this.p.shared.player;
         const layers = r.layers;
-        
+
         r.drawScene(() => {
             if (this.recentlyLaunchedScene || this.recentlyChangedScene) {
                 this.drawCurrentsUniformTexture();
@@ -56,8 +60,9 @@ export class Level1Scene extends BaseScene {
             for (const entity of this.entities) {
                 entity.draw(layers.entitiesLayer, layers.ambientTexture);
             }
+            this.drawUICallback(layers.uiLayer, layers.entitiesLayer);
             ui.draw(layers.uiLayer);
-            
+
             super.draw();
         });
 
